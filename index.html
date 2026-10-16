@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonia - Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <h1>Harmonia Documentation</h1>
+    <p>Welcome to the official documentation for <strong>Harmonia</strong>, a music streaming platform made of three projects: a Flutter mobile app for Android and iOS, a NestJS backend API, and a Next.js admin panel. Follow this guide to set everything up, brand it and publish it.</p>
+
+    <div class="alert">
+        <strong>What is in this package:</strong>
+        <ul class="step-list" style="margin-top: 10px;">
+            <li><strong>Flutter-App/</strong> &mdash; the mobile app (Android and iOS).</li>
+            <li><strong>Backend/</strong> &mdash; the NestJS + PostgreSQL API.</li>
+            <li><strong>Admin-Panel/</strong> &mdash; the Next.js admin panel.</li>
+            <li><strong>Documentation/</strong> &mdash; this guide.</li>
+        </ul>
+        <strong>Setting up for the first time?</strong> Start with the <a href="#backend-setup">backend (section 13)</a>, then the <a href="#admin-panel-setup">admin panel (section 14)</a>, then come back to <a href="#prerequisites">section 1</a> for the app. The app and the admin panel both need a running backend.
+    </div>
+
+    <div class="toc">
+        <strong>Contents</strong>
+        <ol>
+            <li><a href="#feature-walkthrough">Feature Walkthrough</a></li>
+            <li><a href="#third-party-services">Third-Party Services and Costs</a></li>
+            <li><a href="#prerequisites">1. Prerequisites</a></li>
+            <li><a href="#environment-setup">2. Environment Setup</a></li>
+            <li><a href="#change-package-name">3. Change Package Name and Bundle ID</a></li>
+            <li><a href="#firebase-setup">4. Firebase Setup</a></li>
+            <li><a href="#social-sign-in">5. Social Sign-In and Push Notifications</a></li>
+            <li><a href="#change-app-name">6. Change App Name</a></li>
+            <li><a href="#change-app-icon">7. App Icon, Splash and Colours</a></li>
+            <li><a href="#api-customization">8. Connect the App to Your Backend</a></li>
+            <li><a href="#localization">9. Languages</a></li>
+            <li><a href="#admob">10. AdMob</a></li>
+            <li><a href="#premium">11. Premium Subscriptions (Google Play)</a></li>
+            <li><a href="#build-and-release">12. Build and Release</a></li>
+            <li><a href="#backend-setup">13. Backend Setup (NestJS)</a></li>
+            <li><a href="#admin-panel-setup">14. Admin Panel Setup (Next.js)</a></li>
+            <li><a href="#api-reference">15. API Reference</a></li>
+            <li><a href="#database-schema">16. Database Schema</a></li>
+            <li><a href="#faq">17. FAQ and Common Build Errors</a></li>
+            <li><a href="#support">18. Support</a></li>
+            <li><a href="#changelog">19. Changelog</a></li>
+        </ol>
+    </div>
+
+    <!-- ===================================================== -->
+    <section id="feature-walkthrough">
+        <h2>Feature Walkthrough</h2>
+        <p>A plain-language tour of what the app does, so you can find your way around before touching any code. Nothing in this section needs programming knowledge &mdash; the technical setup starts at <a href="#prerequisites">section 1</a>.</p>
+
+        <h3>First launch</h3>
+        <ul class="step-list">
+            <li><strong>Splash screen</strong> &mdash; your logo and tagline while the app loads its settings from the backend. If you turned on maintenance mode or a forced update in the admin panel, the listener sees that message here instead.</li>
+            <li><strong>Sign in or skip</strong> &mdash; e-mail and password, Google, Facebook or Apple. Listeners can tap <strong>Skip</strong> and browse as a guest; the app asks them to sign in when they try something that needs an account, such as liking a song.</li>
+            <li><strong>Music taste</strong> &mdash; after the first sign-in, listeners pick genres and artists they like. This shapes their Home feed and recommendations, and can be changed later in Settings.</li>
+            <li><strong>Home</strong> &mdash; the listener lands on the Home tab.</li>
+        </ul>
+
+        <h3>The four main tabs</h3>
+        <table class="doc-table">
+            <thead><tr><th>Tab</th><th>What the listener does there</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Home</strong></td><td>Banner carousel, then the sections you arrange in the admin panel: top hits, playlists, just arrived, artists, moods, genres, shorts, recently played and continue listening. Free listeners also see a banner ad.</td></tr>
+                <tr><td><strong>Explore</strong></td><td>Search by text or voice, with trending searches and suggestions. Browse all, moods, genres and fresh picks.</td></tr>
+                <tr><td><strong>Premium</strong></td><td>Premium plans with store prices, the free trial offer, the current plan status, and Restore purchases.</td></tr>
+                <tr><td><strong>Library</strong></td><td>Playlists, saved albums and artists, liked songs, history and downloads, with filters, search, and a grid or list view. Listeners create their own playlists here.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="image-gallery">
+            <img src="assets/02-home.jpg" alt="Home feed">
+            <img src="assets/05-explore.jpg" alt="Search and explore">
+            <img src="assets/07-library.jpg" alt="Library and playlists">
+        </div>
+
+        <h3>Listening</h3>
+        <ul class="step-list">
+            <li><strong>Mini player and full player</strong> &mdash; a mini player follows the listener through the app; tapping it opens the full player with artwork, seek bar, shuffle and repeat.</li>
+            <li><strong>Up next and lyrics</strong> &mdash; reorder the queue, read synced lyrics, open full-screen lyrics and share a lyric card.</li>
+            <li><strong>Listening tools</strong> &mdash; sleep timer, playback speed, equalizer (Android), crossfade, volume normalisation and autoplay of similar songs.</li>
+            <li><strong>Anywhere</strong> &mdash; background playback with lock-screen controls, Chromecast, Android Auto and an Android home-screen widget.</li>
+            <li><strong>Offline</strong> &mdash; Premium listeners download songs and albums and play them without a connection.</li>
+        </ul>
+        <div class="image-gallery">
+            <img src="assets/03-player.jpg" alt="Player, up next and lyrics">
+            <img src="assets/04-player-tools.jpg" alt="Equalizer, sleep timer and playback speed">
+        </div>
+
+        <h3>Free and Premium</h3>
+        <p>You decide which songs, albums and playlists are Premium. Free listeners see Premium content locked and hear ads; Premium listeners get ad-free listening, downloads and Premium-only content. Premium is sold as a subscription through <strong>Google Play Billing</strong> (see <a href="#premium">section 11</a>).</p>
+        <div class="image-gallery">
+            <img src="assets/08-premium.jpg" alt="Premium screens">
+        </div>
+
+        <h3>Settings</h3>
+        <p>Profile and photo, your devices (sign any device out remotely), music taste, manage subscription, playback options, audio quality, push notifications, theme (light, dark or system), language (English or Bangla), clear cache, legal pages, credits, sign out and delete account.</p>
+        <div class="image-gallery">
+            <img src="assets/11-settings.jpg" alt="Settings screens">
+        </div>
+
+        <h3>What you control from the admin panel</h3>
+        <p>Almost everything listeners see is managed in the browser, without rebuilding the app: songs, albums, artists, playlists, shorts, home sections, banners, moods and genres, Premium plans and the Premium screen text, ads, push notifications, app version and maintenance mode, legal links, app users and staff accounts. The full list is in <a href="#admin-panel-setup">section 14</a>.</p>
+        <div class="image-gallery">
+            <img src="assets/12-admin.jpg" alt="Admin panel dashboard">
+        </div>
+
+        <div class="alert">
+            <strong>Recommended first hour.</strong> Set up the backend (<a href="#backend-setup">section 13</a>), start the admin panel (<a href="#admin-panel-setup">section 14</a>) and sign in with your admin account. Upload one artist, one song with an audio file and cover, and add it to a home section. Then point the app at your backend (<a href="#api-customization">section 8</a>), connect Firebase (<a href="#firebase-setup">section 4</a>) and run it &mdash; your song should appear on the Home screen. Once that round trip works, move on to branding and store setup.
+        </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="third-party-services">
+        <h2>Third-Party Services and Costs</h2>
+        <p>Harmonia is self-hosted: you receive the full source code, with no licence keys and nothing payable to us. Some features connect to outside services that are <strong>not included in the purchase</strong>.</p>
+
+        <div class="alert-warning">
+            <strong>Buyers are responsible for all fees charged by third-party services.</strong> This includes hosting, developer accounts, app store commissions, storage and any usage beyond a provider's free tier. The item price covers the source code and documentation only. Prices change; check each provider's current rates.
+        </div>
+
+        <table class="doc-table">
+            <thead><tr><th>Service</th><th>Required?</th><th>Used for</th><th>Who bills you</th></tr></thead>
+            <tbody>
+                <tr><td>VPS or cloud server</td><td>Required</td><td>Runs the backend (Node.js 20+, PostgreSQL 14+) and the admin panel</td><td>Your hosting provider</td></tr>
+                <tr><td>Firebase</td><td>Required</td><td>App sign-in (Authentication) and push notifications (Cloud Messaging). The free Spark plan covers typical use</td><td>Google, beyond the free tier</td></tr>
+                <tr><td>Cloudflare R2</td><td>Required</td><td>Stores audio, covers and images uploaded from the admin panel</td><td>Cloudflare, beyond the free tier</td></tr>
+                <tr><td>Google Play Developer account</td><td>Required for Android</td><td>Publishing the app; USD 25 one-time</td><td>Google</td></tr>
+                <tr><td>Apple Developer Program</td><td>Required for iOS</td><td>Publishing the app and Sign in with Apple; USD 99 per year</td><td>Apple</td></tr>
+                <tr><td>Google Play Billing</td><td>Optional</td><td>Premium subscriptions. <strong>The only payment method included.</strong> Google takes a commission on each sale, typically 15&ndash;30%</td><td>Google (deducted from sales)</td></tr>
+                <tr><td>Google Cloud Pub/Sub</td><td>Optional</td><td>Real-time notifications about renewals and refunds from Google Play</td><td>Google, beyond the free tier</td></tr>
+                <tr><td>Apple In-App Purchase, Stripe, PayPal, other gateways</td><td>Not included</td><td>No checkout integration ships for these. Premium cannot be bought on iOS in this version</td><td>&mdash;</td></tr>
+                <tr><td>Google AdMob</td><td>Optional</td><td>Banner and interstitial ads for free listeners</td><td>Free; you earn revenue</td></tr>
+                <tr><td>Meta for Developers</td><td>Optional</td><td>Facebook sign-in</td><td>Free</td></tr>
+                <tr><td>Cloudflare Workers</td><td>Optional</td><td>Expiring audio links (the included worker script)</td><td>Cloudflare, beyond the free tier</td></tr>
+                <tr><td>Music licensing</td><td>Required for real content</td><td>You must own or license every track you publish. No music is included in the package</td><td>Rights holders / licensing bodies</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="prerequisites">
+        <h2>1. Prerequisites</h2>
+        <p>Use these versions for the smoothest build. The app was built and tested with the versions marked "tested".</p>
+
+        <div class="prereq-grid">
+            <div class="prereq-card"><strong>Flutter SDK</strong>Tested: 3.47.6<br>Min: 3.41</div>
+            <div class="prereq-card"><strong>Java (JDK)</strong>17 or 21<br>(Android Studio's bundled JDK works)</div>
+            <div class="prereq-card"><strong>Xcode</strong>Tested: 26<br>Min: 16</div>
+            <div class="prereq-card"><strong>CocoaPods</strong>Latest (1.16 or newer)</div>
+            <div class="prereq-card"><strong>Node.js</strong>20 LTS or newer</div>
+            <div class="prereq-card"><strong>PostgreSQL</strong>14 or newer</div>
+            <div class="prereq-card"><strong>IDE</strong>Android Studio / VS Code</div>
+        </div>
+
+        <div class="alert">
+            <strong>Java version:</strong> Gradle 8.14, used by this project, runs on JDK 17 to 24. Newer JDKs fail with "Unsupported class file major version". If <code>java -version</code> shows something newer, point Flutter at Android Studio's JDK: <code>flutter config --jdk-dir "&lt;Android Studio&gt;/jbr"</code>.
+        </div>
+
+        <div class="alert" style="margin-top: 25px;">
+            <strong>Need help?</strong> If you hit a version problem, check the <a href="#faq">FAQ</a> or contact us through the <a href="#support">Support section</a>.
+        </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="environment-setup">
+        <h2>2. Environment Setup</h2>
+        <p>Select your operating system to see the setup steps.</p>
+
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="openTab('windows')">Windows</button>
+                <button class="tab-btn" onclick="openTab('mac')">macOS</button>
+                <button class="tab-btn" onclick="openTab('linux')">Linux</button>
+            </div>
+
+            <div id="windows" class="tab-content active">
+                <h3>Android Studio</h3>
+                <ul class="step-list">
+                    <li>Download Android Studio from the <a href="https://developer.android.com/studio" target="_blank">official page</a>, run the installer and let it download the SDK components.</li>
+                    <li><em>Optional:</em> create an emulator in the Device Manager.</li>
+                </ul>
+                <h3>Flutter SDK</h3>
+                <ul class="step-list">
+                    <li>Download the stable Windows release from the <a href="https://docs.flutter.dev/install/manual" target="_blank">Flutter download page</a> and extract it, for example to <code>C:\flutter</code>.</li>
+                    <li>Add <code>C:\flutter\bin</code> to the <strong>Path</strong> environment variable (This PC &gt; Properties &gt; Advanced system settings &gt; Environment Variables).</li>
+                    <li>Open a new Command Prompt and run <code>flutter doctor</code>. Fix anything it reports.</li>
+                </ul>
+                <h3>IDE</h3>
+                <ul class="step-list">
+                    <li>In Android Studio open <strong>File &gt; Settings &gt; Plugins &gt; Marketplace</strong>, install the <strong>Flutter</strong> and <strong>Dart</strong> plugins and restart.</li>
+                </ul>
+                <a href="https://www.youtube.com/watch?v=hfz_AraTk_k&t=1s" target="_blank" class="video-btn">▶ Watch Windows Setup Video</a>
+            </div>
+
+            <div id="mac" class="tab-content">
+                <h3>Android Studio</h3>
+                <ul class="step-list">
+                    <li>Download Android Studio from the <a href="https://developer.android.com/studio" target="_blank">official page</a>, drag it into Applications and complete the setup wizard.</li>
+                </ul>
+                <h3>Flutter SDK</h3>
+                <ul class="step-list">
+                    <li>Download the stable macOS release from the <a href="https://docs.flutter.dev/install/manual" target="_blank">Flutter download page</a> and extract it: <code>tar xf flutter_macos_&lt;version&gt;.tar.xz</code></li>
+                    <li>Add <code>flutter/bin</code> to your PATH in <code>~/.zshrc</code>, then open a new terminal and run <code>flutter doctor</code>.</li>
+                </ul>
+                <h3>Xcode and CocoaPods (for iOS)</h3>
+                <ul class="step-list">
+                    <li>Install Xcode from the Mac App Store, open it once to finish installing components, then run <code>sudo xcodebuild -runFirstLaunch</code>.</li>
+                    <li>Install CocoaPods: <code>sudo gem install cocoapods</code> (or <code>brew install cocoapods</code>).</li>
+                </ul>
+                <h3>IDE</h3>
+                <ul class="step-list">
+                    <li>In Android Studio open <strong>Settings &gt; Plugins &gt; Marketplace</strong>, install <strong>Flutter</strong> and <strong>Dart</strong> and restart.</li>
+                </ul>
+                <a href="https://www.youtube.com/watch?v=f09c-nw15K8" target="_blank" class="video-btn">▶ Watch macOS Setup Video</a>
+            </div>
+
+            <div id="linux" class="tab-content">
+                <h3>Android Studio</h3>
+                <ul class="step-list">
+                    <li>Download Android Studio from the <a href="https://developer.android.com/studio" target="_blank">official page</a>, extract it (<code>tar -xvzf android-studio-*-linux.tar.gz</code>) and run <code>bin/studio.sh</code>.</li>
+                </ul>
+                <h3>Flutter SDK</h3>
+                <ul class="step-list">
+                    <li>Download the stable Linux release from the <a href="https://docs.flutter.dev/install/manual" target="_blank">Flutter download page</a> and extract it: <code>tar xf flutter_linux_&lt;version&gt;.tar.xz</code></li>
+                    <li>Add <code>flutter/bin</code> to your PATH, then run <code>flutter doctor</code>.</li>
+                </ul>
+                <h3>IDE</h3>
+                <ul class="step-list">
+                    <li>In Android Studio open <strong>File &gt; Settings &gt; Plugins &gt; Marketplace</strong>, install <strong>Flutter</strong> and <strong>Dart</strong> and restart.</li>
+                </ul>
+                <a href="https://www.youtube.com/watch?v=e63OlW_2gpQ" target="_blank" class="video-btn">▶ Watch Linux Setup Video</a>
+            </div>
+        </div>
+
+        <h3>Open and run the app</h3>
+<pre><code>cd Flutter-App
+flutter pub get
+flutter run</code></pre>
+        <p>Generated code (models and translations) is already included. Regenerate it only after you change models or translation files:</p>
+<pre><code>dart run build_runner build --delete-conflicting-outputs
+flutter gen-l10n</code></pre>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="change-package-name">
+        <h2>3. Change Package Name and Bundle ID</h2>
+        <p>Every app needs a unique identifier, for example <code>com.yourcompany.music</code>. Change it <strong>before</strong> you set up Firebase, because Firebase apps are registered by this identifier.</p>
+
+        <h3>Android</h3>
+        <table class="doc-table">
+            <thead><tr><th>File</th><th>Change</th></tr></thead>
+            <tbody>
+                <tr><td><code>android/app/build.gradle.kts</code></td><td><code>namespace</code> and <code>applicationId</code> (currently <code>com.harmonia.music.player</code>)</td></tr>
+                <tr><td><code>android/app/src/main/AndroidManifest.xml</code></td><td>the <code>package</code> attribute on <code>&lt;manifest&gt;</code></td></tr>
+                <tr><td><code>android/app/src/main/kotlin/.../MainActivity.kt</code><br><code>.../NowPlayingWidgetProvider.kt</code></td><td>the <code>package</code> line at the top of both files. You may also move both files into a folder that matches the new package (optional; the build works either way).</td></tr>
+            </tbody>
+        </table>
+
+        <h3>iOS</h3>
+        <ul class="step-list">
+            <li>Open <code>ios/Runner.xcworkspace</code> in Xcode.</li>
+            <li>Select the <strong>Runner</strong> target &gt; <strong>Signing &amp; Capabilities</strong>, choose your <strong>Team</strong> and enter your <strong>Bundle Identifier</strong>.</li>
+            <li>Do the same for the <strong>RunnerTests</strong> target (use <code>&lt;your bundle id&gt;.RunnerTests</code>).</li>
+        </ul>
+
+        <div class="alert">
+            <strong>Tip:</strong> the Dart package name in <code>pubspec.yaml</code> (<code>prime_music</code>) is internal and never shown to users. Leave it as is; renaming it means rewriting every import.
+        </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="firebase-setup">
+        <h2>4. Firebase Setup</h2>
+        <p>Firebase provides sign-in and push notifications. The package contains our demo Firebase files; <strong>replace them with your own</strong> before you publish.</p>
+
+        <h3>Step 1: Create a Firebase project</h3>
+        <ul class="step-list">
+            <li>Open the <a href="https://console.firebase.google.com" target="_blank">Firebase console</a> and click <strong>Create a project</strong>. Enter a name and accept the terms.</li>
+            <li>Choose whether to enable Gemini and Google Analytics (neither is needed by Harmonia), then click <strong>Create project</strong>.</li>
+        </ul>
+        <div class="image-gallery">
+            <img src="assets/firebase_project_creation_02.png" alt="Firebase project creation">
+            <img src="assets/firebase_project_creation_03.png" alt="Firebase Google Analytics option">
+            <img src="assets/firebase_project_creation_04.png" alt="Firebase create project">
+        </div>
+
+        <h3>Step 2: Connect the app (recommended: FlutterFire CLI)</h3>
+        <p>The FlutterFire CLI registers your Android and iOS apps and writes all config files for you.</p>
+<pre><code>npm install -g firebase-tools
+firebase login
+dart pub global activate flutterfire_cli
+cd Flutter-App
+flutterfire configure --project=&lt;your-firebase-project-id&gt;</code></pre>
+        <p>Select <strong>android</strong> and <strong>ios</strong>, and confirm the package name and bundle ID from section 3. The command updates:</p>
+        <ul class="step-list">
+            <li><code>lib/firebase_options.dart</code></li>
+            <li><code>android/app/google-services.json</code></li>
+            <li><code>ios/Runner/GoogleService-Info.plist</code></li>
+            <li><code>firebase.json</code></li>
+        </ul>
+
+        <h3>Manual alternative</h3>
+        <ul class="step-list">
+            <li>In the Firebase console click <strong>Add app &gt; Android</strong>, enter your package name, download <code>google-services.json</code> and place it in <code>android/app/</code>.</li>
+            <li>Click <strong>Add app &gt; Apple</strong>, enter your bundle ID, download <code>GoogleService-Info.plist</code> and drag it into <code>Runner/</code> in Xcode (tick "Copy items if needed").</li>
+            <li>Run <code>flutterfire configure</code> once anyway, or update the values in <code>lib/firebase_options.dart</code> by hand &mdash; the app reads its Firebase settings from that file.</li>
+        </ul>
+
+        <h3>Step 3: Enable sign-in methods</h3>
+        <ul class="step-list">
+            <li>Open <strong>Build &gt; Authentication &gt; Sign-in method</strong>.</li>
+            <li>Enable <strong>Email/Password</strong>, and the social providers you want (configured in <a href="#social-sign-in">section 5</a>).</li>
+        </ul>
+        <div class="image-gallery">
+            <img src="assets/provider_select_page.png" alt="Firebase sign-in providers">
+            <img src="assets/provider_eneble_page_email_pass.png" alt="Enable Email/Password">
+        </div>
+
+        <h3>Step 4: Service account for the backend</h3>
+        <p>The backend verifies sign-ins and sends push notifications with a Firebase service account: <strong>Project settings &gt; Service accounts &gt; Generate new private key</strong>. You will paste this JSON into the backend's <code>.env</code> in <a href="#backend-setup">section 13</a>.</p>
+
+        <a href="https://www.youtube.com/results?search_query=flutterfire+configure+firebase+flutter" target="_blank" class="video-btn">▶ Firebase + Flutter video tutorials</a>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="social-sign-in">
+        <h2>5. Social Sign-In and Push Notifications</h2>
+        <p>The login screen shows Google, Facebook and Apple buttons on both platforms. Configure the ones you want; to hide a button, remove it from <code>lib/feature/auth/presentation/widgets/social_media_buttons.dart</code>.</p>
+
+        <h3>Google</h3>
+        <ul class="step-list">
+            <li>Enable <strong>Google</strong> in Firebase Authentication.</li>
+            <li><strong>Android:</strong> add your SHA-1 and SHA-256 fingerprints in <strong>Project settings &gt; Your apps &gt; Android</strong>. Add the debug key, your upload key and, after publishing, the <strong>App signing key</strong> from Play Console. Get local fingerprints with <code>cd android && ./gradlew signingReport</code>. Download <code>google-services.json</code> again afterwards.</li>
+            <li><strong>iOS:</strong> download <code>GoogleService-Info.plist</code> again (it now contains <code>CLIENT_ID</code> and <code>REVERSED_CLIENT_ID</code>). In Xcode, open <strong>Runner &gt; Info &gt; URL Types</strong>, add a URL type and paste the <code>REVERSED_CLIENT_ID</code> value as the URL scheme.</li>
+        </ul>
+
+        <h3>Facebook</h3>
+        <ul class="step-list">
+            <li>Create an app at <a href="https://developers.facebook.com" target="_blank">Meta for Developers</a> and add the <strong>Facebook Login</strong> product.</li>
+            <li>In Firebase, enable <strong>Facebook</strong> with your Meta app ID and app secret, and copy the OAuth redirect URI that Firebase shows into the Meta app's <strong>Valid OAuth Redirect URIs</strong>.</li>
+            <li><strong>Android:</strong> in <code>android/app/src/main/res/values/strings.xml</code> replace <code>YOUR_FACEBOOK_APP_ID</code> and <code>YOUR_FACEBOOK_CLIENT_TOKEN</code> (Meta app &gt; Settings &gt; Basic / Advanced). Add your package name and key hashes in the Meta app's Android settings.</li>
+            <li><strong>iOS:</strong> add these to <code>ios/Runner/Info.plist</code>: <code>FacebookAppID</code>, <code>FacebookClientToken</code>, <code>FacebookDisplayName</code>, a URL scheme <code>fb&lt;APP_ID&gt;</code> under <code>CFBundleURLTypes</code>, and <code>LSApplicationQueriesSchemes</code> with <code>fbapi</code> and <code>fb-messenger-share-api</code>. See the <a href="https://facebook.meedu.app/docs/7.x.x/ios" target="_blank">flutter_facebook_auth iOS guide</a>.</li>
+        </ul>
+
+        <h3>Apple</h3>
+        <ul class="step-list">
+            <li>Enable <strong>Apple</strong> in Firebase Authentication.</li>
+            <li><strong>iOS:</strong> in Xcode, <strong>Signing &amp; Capabilities &gt; + Capability &gt; Sign in with Apple</strong>. Xcode creates <code>Runner.entitlements</code> for you.</li>
+            <li><strong>Android</strong> uses Apple's web flow. Create a <strong>Services ID</strong> in your Apple Developer account and set it, plus your redirect URL, in <code>lib/feature/auth/data/datasources/auth_remote_data_source.dart</code> (<code>clientId</code> and <code>redirectUri</code>). Follow the <a href="https://pub.dev/packages/sign_in_with_apple" target="_blank">sign_in_with_apple</a> Android setup. If you do not need Apple sign-in on Android, hide the button there instead.</li>
+        </ul>
+
+        <h3>Push notifications</h3>
+        <ul class="step-list">
+            <li><strong>Android:</strong> works once <code>google-services.json</code> is in place.</li>
+            <li><strong>iOS:</strong> in Xcode add the <strong>Push Notifications</strong> capability (Background Modes for audio, fetch and remote notifications are already set in <code>Info.plist</code>). Create an <strong>APNs key</strong> in your Apple Developer account and upload it in Firebase: <strong>Project settings &gt; Cloud Messaging &gt; Apple app configuration</strong>.</li>
+            <li>The app subscribes every device to the topic <code>prime-music</code> for "All users" campaigns. The backend sends to the same topic. If you rename it, change both <code>lib/core/service/push_notification/push_notification_service.dart</code> and the backend's <code>BROADCAST_TOPIC</code> in <code>src/modules/notifications/notifications.service.ts</code>.</li>
+        </ul>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="change-app-name">
+        <h2>6. Change App Name</h2>
+        <table class="doc-table">
+            <thead><tr><th>Where</th><th>File</th><th>Key</th></tr></thead>
+            <tbody>
+                <tr><td>Android launcher name</td><td><code>android/app/src/main/AndroidManifest.xml</code></td><td><code>android:label</code></td></tr>
+                <tr><td>Android widget and app strings</td><td><code>android/app/src/main/res/values/strings.xml</code></td><td><code>app_name</code>, <code>app_display_name</code></td></tr>
+                <tr><td>iOS home-screen name</td><td><code>ios/Runner/Info.plist</code></td><td><code>CFBundleDisplayName</code>, <code>CFBundleName</code></td></tr>
+                <tr><td>Name inside the app</td><td><code>lib/l10n/app_en.arb</code>, <code>lib/l10n/app_bn.arb</code></td><td><code>appName</code> (then run <code>flutter gen-l10n</code>)</td></tr>
+                <tr><td>Splash wordmark and tagline</td><td><code>lib/feature/splash/presentation/splash_screen.dart</code>, ARB key <code>splashTagline</code></td><td><code>'HARMONIA'</code></td></tr>
+                <tr><td>Other on-screen brand text</td><td><code>lib/feature/auth/presentation/.../login_page.dart</code>, <code>home_app_bar.dart</code>, <code>lyric_card_page.dart</code>, <code>local_notification_service.dart</code></td><td>search for <code>Harmonia</code></td></tr>
+            </tbody>
+        </table>
+        <p>Tip: search the <code>lib/</code> folder for <code>Harmonia</code> to find every occurrence.</p>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="change-app-icon">
+        <h2>7. App Icon, Splash and Colours</h2>
+        <h3>App icon</h3>
+        <ul class="step-list">
+            <li><strong>Android:</strong> replace the files in <code>android/app/src/main/res/mipmap-*/</code> (adaptive icon: <code>mipmap-anydpi-v26/ic_launcher.xml</code>). The easiest way is Android Studio: right-click <code>res</code> &gt; <strong>New &gt; Image Asset</strong>.</li>
+            <li><strong>iOS:</strong> replace the images in <code>ios/Runner/Assets.xcassets/AppIcon.appiconset/</code>, or drop a 1024&times;1024 image onto the AppIcon set in Xcode.</li>
+            <li><strong>Optional:</strong> generate both at once with the <a href="https://pub.dev/packages/flutter_launcher_icons" target="_blank">flutter_launcher_icons</a> package.</li>
+        </ul>
+        <h3>Splash screen</h3>
+        <ul class="step-list">
+            <li>The native launch background colour is <code>splash_background</code> in <code>android/app/src/main/res/values/colors.xml</code> (and <code>LaunchImage</code> on iOS).</li>
+            <li>The animated splash (logo, wordmark and tagline) is drawn in <code>lib/feature/splash/presentation/splash_screen.dart</code>.</li>
+        </ul>
+        <h3>Brand colours</h3>
+        <ul class="step-list">
+            <li>The primary green and the dark/light surface colours are in <code>lib/core/theme/src/theme_extension/src/colors/semantic.dart</code> and <code>lib/core/theme/theme.dart</code>.</li>
+            <li>Page colours that follow light and dark mode are in <code>lib/core/theme/palette.dart</code>. Dark is the default theme; listeners can switch in Settings.</li>
+        </ul>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="api-customization">
+        <h2>8. Connect the App to Your Backend</h2>
+        <p>Open <code>lib/core/network/constants/api_endpoint.dart</code> and set your backend's public address:</p>
+<pre><code>static const String apiHost = 'https://your-domain.com';   // change to e.g. https://api.yourdomain.com</code></pre>
+        <ul class="step-list">
+            <li>Use the origin only &mdash; no trailing slash and no <code>/api/v1</code>; the app adds that itself.</li>
+            <li>Use <strong>https</strong> in production.</li>
+            <li>For local testing on an emulator use <code>http://10.0.2.2:7001</code> (Android emulator) or your computer's LAN IP (real device).</li>
+        </ul>
+        <p>Privacy policy, terms, support e-mail, store links, minimum app version and maintenance mode are <strong>not</strong> in the app code. They come from the backend and are edited on the admin panel's <strong>App config</strong> page.</p>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="localization">
+        <h2>9. Languages</h2>
+        <p>The app ships with <strong>English</strong> and <strong>Bangla</strong>. By default it follows the phone's language when it is supported, otherwise English. Listeners can choose in <strong>Settings &gt; Appearance &gt; Language</strong>.</p>
+        <ul class="step-list">
+            <li>All on-screen text is in <code>lib/l10n/app_en.arb</code> (the template) and <code>lib/l10n/app_bn.arb</code>.</li>
+            <li>Generated code goes to <code>lib/l10n/gen/</code> (configured in <code>l10n.yaml</code>).</li>
+        </ul>
+        <h3>Add a language</h3>
+        <ul class="step-list">
+            <li>Copy <code>app_en.arb</code> to <code>app_xx.arb</code> (for example <code>app_es.arb</code>) and translate the values.</li>
+            <li>Add <code>'xx'</code> to <code>supportedLanguages</code> in <code>lib/core/settings/app_settings_cubit.dart</code>.</li>
+            <li>Add the language to the options list in the language tile of <code>lib/feature/profile/presentation/profile/pages/profile_page.dart</code>.</li>
+            <li>Run <code>flutter gen-l10n</code>.</li>
+            <li>If the language uses a new script, add a font fallback in <code>lib/core/theme/app_fonts.dart</code>.</li>
+        </ul>
+        <h3>Remove a language</h3>
+        <p>Delete its ARB file, remove it from <code>supportedLanguages</code> and the language tile, then run <code>flutter gen-l10n</code>.</p>
+        <p>Catalogue content (song titles, playlist names and so on) is shown as entered in the admin panel.</p>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="admob">
+        <h2>10. AdMob</h2>
+        <p>The app ships with Google's public <strong>test IDs</strong>, so ads show as "Test Ad" and cannot cause policy problems while you develop.</p>
+        <h3>App IDs (in the app)</h3>
+        <table class="doc-table">
+            <thead><tr><th>Platform</th><th>File</th><th>Key</th></tr></thead>
+            <tbody>
+                <tr><td>Android</td><td><code>android/app/build.gradle.kts</code></td><td><code>manifestPlaceholders["admobAppId"]</code> in the <strong>release</strong> block (keep the test ID in the debug block)</td></tr>
+                <tr><td>iOS</td><td><code>ios/Runner/Info.plist</code></td><td><code>GADApplicationIdentifier</code></td></tr>
+            </tbody>
+        </table>
+        <h3>Ad unit IDs (in the admin panel)</h3>
+        <p>Banner and interstitial unit IDs are <strong>not</strong> in the app. Set them on the admin panel's <strong>Ads</strong> page, separately for Android and iOS, together with how often interstitials appear (every N songs, minimum interval). The app reads them from <code>GET /api/v1/ads/config</code> at launch, so you can change them without a new release.</p>
+        <div class="alert">
+            <strong>iOS:</strong> if you serve ads on iOS, also add Google's <code>SKAdNetworkItems</code> list and, if you use personalised ads, an App Tracking Transparency prompt (<code>NSUserTrackingUsageDescription</code>). See Google's <a href="https://developers.google.com/admob/flutter/quick-start" target="_blank">AdMob Flutter quick start</a>.
+        </div>
+        <p>Premium listeners never see ads.</p>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="premium">
+        <h2>11. Premium Subscriptions (Google Play)</h2>
+        <div class="alert-warning">
+            <strong>Platform note:</strong> Premium is sold through <strong>Google Play Billing on Android</strong>. Apple In-App Purchase verification is not included in this version, so Premium cannot be bought on iOS; iOS listeners use the free tier. Premium can also be granted manually from the admin panel on any platform.
+        </div>
+
+        <h3>Step 1: Create the subscription in Play Console</h3>
+        <ul class="step-list">
+            <li>Upload a build to a testing track first (Play Console only allows products once the app has the billing permission, which Harmonia already declares).</li>
+            <li>Open <strong>Monetize with Play &gt; Products &gt; Subscriptions</strong> and create a subscription, for example product ID <code>premium_single</code>.</li>
+            <li>Add a <strong>base plan</strong> (for example <code>monthly</code>, auto-renewing, 1 month) and set prices.</li>
+            <li><em>Optional:</em> add a free-trial <strong>offer</strong> (for example <code>free-trial-7-days</code>).</li>
+            <li>Add your testers under <strong>Settings &gt; License testing</strong> so test purchases are free.</li>
+        </ul>
+
+        <h3>Step 2: Add the plan in the admin panel</h3>
+        <p>Open <strong>Premium plans</strong> and create a plan. Fill in the platforms (<code>android</code>), payment provider (<code>google_play</code>), the <strong>product ID</strong>, <strong>base plan ID</strong> and optional <strong>offer ID</strong> &mdash; they must match Play Console exactly. Name, features, trial text, tag, colour and button text control how the plan looks in the app. The price shown to listeners always comes from Google Play.</p>
+        <p>The texts on the Premium screen (title, benefits, trial offer) are edited on the same page under <strong>Premium page settings</strong>.</p>
+
+        <h3>Step 3: Let the backend verify purchases</h3>
+        <p>The app sends every purchase to the backend, which confirms it with Google before unlocking Premium. Set up the Google Play service account and real-time notifications as described in <a href="#backend-google-play">section 13, step 7</a>.</p>
+
+        <h3>How Premium works</h3>
+        <ul class="step-list">
+            <li>Mark songs, albums or playlists as <strong>Premium</strong> in the admin panel. A song inside a Premium album is Premium everywhere.</li>
+            <li>Free listeners see Premium items with a lock and cannot play or download them.</li>
+            <li>Premium listeners get ad-free listening, offline downloads and Premium content. When Premium ends, downloads are removed from the device.</li>
+            <li><strong>Restore purchases</strong> on the Premium tab restores an existing subscription on a new device.</li>
+        </ul>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="build-and-release">
+        <h2>12. Build and Release</h2>
+
+        <h3>Version number</h3>
+        <p>Android reads <code>versionCode</code> and <code>versionName</code> from <code>android/app/build.gradle.kts</code> (these override <code>pubspec.yaml</code>). Increase <code>versionCode</code> for every upload. iOS uses <code>version</code> in <code>pubspec.yaml</code>.</p>
+
+        <h3>Android: create an upload keystore</h3>
+        <p><strong>macOS / Linux:</strong></p>
+<pre><code>keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload</code></pre>
+        <p><strong>Windows:</strong></p>
+<pre><code>keytool -genkey -v -keystore %userprofile%\upload-keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload</code></pre>
+        <div class="alert-danger">
+            <strong>Keep the keystore and passwords safe and private.</strong> If you lose them you cannot update your app on Google Play. Never commit them to a public repository.
+        </div>
+
+        <h3>Android: key.properties</h3>
+        <p>Create <code>android/key.properties</code>:</p>
+<pre><code>storePassword=&lt;password from previous step&gt;
+keyPassword=&lt;password from previous step&gt;
+keyAlias=upload
+storeFile=&lt;full path to upload-keystore.jks&gt;</code></pre>
+        <p><code>android/app/build.gradle.kts</code> already reads this file in its <code>signingConfigs</code> block. If <code>key.properties</code> is missing, release builds are signed with the debug key so they still build &mdash; Google Play will not accept those.</p>
+
+        <h3>Android: build</h3>
+<pre><code>flutter build apk --release          # APK for direct install / testing
+flutter build appbundle --release    # App Bundle for Google Play</code></pre>
+        <p>The App Bundle is created at <code>build/app/outputs/bundle/release/app-release.aab</code>. Upload it in Play Console.</p>
+
+        <h3>iOS: build</h3>
+        <ul class="step-list">
+            <li>Run <code>cd ios &amp;&amp; pod install &amp;&amp; cd ..</code></li>
+            <li>Open <code>ios/Runner.xcworkspace</code>, select your Team and bundle ID (section 3) and the capabilities from section 5.</li>
+            <li>The Podfile targets iOS 15.0; set <strong>Minimum Deployments</strong> of the Runner target to 15.0 as well.</li>
+            <li>Build the archive: <code>flutter build ipa --release</code>, then upload <code>build/ios/ipa/*.ipa</code> with Xcode's Organizer or the Transporter app.</li>
+            <li>See Apple's <a href="https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases" target="_blank">distribution guide</a> and Flutter's <a href="https://docs.flutter.dev/deployment/ios" target="_blank">iOS deployment guide</a>.</li>
+        </ul>
+
+        <h3>Test on a real device</h3>
+        <ul class="step-list">
+            <li>Android: enable USB debugging, connect the phone and run <code>flutter run --release</code>.</li>
+            <li>iOS: connect the iPhone, trust the computer, select it in Xcode and press Run. Background audio, Chromecast and push notifications should be tested on real devices.</li>
+            <li>Android Auto: test with the <a href="https://developer.android.com/training/cars/testing/dhu" target="_blank">Desktop Head Unit</a>.</li>
+        </ul>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="backend-setup">
+        <h2>13. Backend Setup (NestJS)</h2>
+        <p>The backend lives in <code>Backend/</code>. It is a NestJS 11 + TypeORM API on PostgreSQL. The app and the admin panel talk only to this API.</p>
+
+        <h3>Step 1: Install</h3>
+<pre><code>cd Backend
+npm ci</code></pre>
+        <p>ffmpeg (used to create stream qualities and measure loudness) comes with the <code>ffmpeg-static</code> package &mdash; nothing to install.</p>
+
+        <h3>Step 2: Create the database</h3>
+<pre><code>createdb harmonia        # or create it in pgAdmin / your host's panel</code></pre>
+
+        <h3>Step 3: Configure .env</h3>
+<pre><code>cp .env.example .env</code></pre>
+        <p>Every variable is explained in <code>.env.example</code>. The important ones:</p>
+        <table class="doc-table">
+            <thead><tr><th>Variable</th><th>What to set</th></tr></thead>
+            <tbody>
+                <tr><td><code>NODE_ENV</code></td><td><code>development</code> on your computer, <code>production</code> on the server</td></tr>
+                <tr><td><code>PORT</code></td><td>API port, default <code>7001</code></td></tr>
+                <tr><td><code>DB_HOST</code>, <code>DB_PORT</code>, <code>DB_USER</code>, <code>DB_PASS</code>, <code>DB_NAME</code></td><td>Your PostgreSQL connection</td></tr>
+                <tr><td><code>JWT_SECRET</code></td><td>Signs admin logins. At least 32 characters: <code>openssl rand -hex 48</code></td></tr>
+                <tr><td><code>ADMIN_EMAIL</code>, <code>ADMIN_PASSWORD</code></td><td>Your first super admin (see step 4)</td></tr>
+                <tr><td><code>FIREBASE_SERVICE_ACCOUNT_JSON</code></td><td>The Firebase service-account JSON from section 4, on one line or base64-encoded</td></tr>
+                <tr><td><code>CORS_ORIGINS</code></td><td>Your admin panel address, e.g. <code>https://admin.yourdomain.com</code></td></tr>
+                <tr><td><code>CLOUDFLARE_R2_*</code></td><td>Media storage (step 6)</td></tr>
+                <tr><td><code>GOOGLE_PLAY_*</code></td><td>Premium verification (step 7)</td></tr>
+                <tr><td><code>MEDIA_URL_SIGNING_SECRET</code></td><td>Optional expiring audio links (step 8)</td></tr>
+                <tr><td><code>TRUST_PROXY</code></td><td><code>1</code> behind nginx or Cloudflare, so rate limits see real client IPs</td></tr>
+            </tbody>
+        </table>
+        <p>To encode the Firebase JSON as base64 on macOS/Linux: <code>base64 -i service-account.json | tr -d '\n'</code></p>
+
+        <div class="alert-warning">
+            <strong>Production safety check.</strong> With <code>NODE_ENV=production</code> the server <strong>refuses to start</strong> while unsafe values remain, and tells you which variable to change: a short or example <code>JWT_SECRET</code>, <code>ALLOW_DEV_USER_HEADER=true</code>, a default <code>ADMIN_PASSWORD</code>, an <code>ADMIN_EMAIL</code> at your-domain.com, a missing Firebase service account, an empty <code>CORS_ORIGINS</code>, or a missing <code>GOOGLE_PLAY_RTDN_TOKEN</code> when Google Play is configured.
+        </div>
+
+        <h3>Step 4: First run and your admin account</h3>
+<pre><code>npm run start:dev        # development, with auto-reload; API at http://localhost:7001/api/v1</code></pre>
+        <ul class="step-list">
+            <li>In development the tables are created automatically from the code. In production the server runs the database migrations in <code>db/migrations/</code> on every start.</li>
+            <li>When the <code>admin_users</code> table is empty, the server creates a <strong>super admin</strong> from <code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code>. Use these to sign in to the admin panel.</li>
+            <li>After your first login you can remove <code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code> from <code>.env</code>; they are only used while no admin exists.</li>
+            <li>Swagger API docs are available at <code>http://localhost:7001/api</code> when <code>NODE_ENV</code> is not production.</li>
+        </ul>
+
+        <h3>Step 5: Go live with PM2</h3>
+<pre><code>npm ci
+npm run build
+npm install -g pm2
+# edit cwd in prod.config.js, then:
+pm2 start prod.config.js      # sets NODE_ENV=production
+pm2 save &amp;&amp; pm2 startup        # restart automatically after a reboot</code></pre>
+        <p>Put nginx in front with HTTPS (for example with Let's Encrypt / certbot):</p>
+<pre><code>server {
+    server_name api.yourdomain.com;
+    client_max_body_size 250m;   # admin uploads: audio up to 60 MB, video up to 250 MB
+
+    location / {
+        proxy_pass http://127.0.0.1:7001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}</code></pre>
+        <p>To update later: upload the new files, then <code>npm ci &amp;&amp; npm run build &amp;&amp; pm2 restart harmonia-api</code>. New migrations run automatically on start.</p>
+
+        <h3>Step 6: Media storage (Cloudflare R2)</h3>
+        <ul class="step-list">
+            <li>In Cloudflare, open <strong>R2</strong>, create a bucket and connect a <strong>custom domain</strong> (for example <code>cdn.yourdomain.com</code>) under the bucket's settings, or enable its public r2.dev URL.</li>
+            <li>Create an <strong>R2 API token</strong> with Object Read &amp; Write on that bucket.</li>
+            <li>Fill in <code>CLOUDFLARE_R2_ENDPOINT</code> (<code>https://&lt;account-id&gt;.r2.cloudflarestorage.com</code>), <code>CLOUDFLARE_R2_ACCESS_KEY_ID</code>, <code>CLOUDFLARE_R2_SECRET_ACCESS_KEY</code>, <code>CLOUDFLARE_R2_BUCKET</code>, <code>CLOUDFLARE_R2_PUBLIC_URL</code> (your public domain) and <code>CLOUDFLARE_R2_PREFIX</code> (a folder such as <code>harmonia/</code>).</li>
+        </ul>
+        <p>Uploads from the admin panel are stored under <code>&lt;prefix&gt;image/</code>, <code>&lt;prefix&gt;audio/</code> and <code>&lt;prefix&gt;video/</code>. Limits: images 10 MB, audio 60 MB, video 250 MB. Stream qualities created by ffmpeg go to <code>&lt;prefix&gt;audio-variants/</code>. Without R2 the upload endpoint answers 503 "Media storage is not configured"; you can still paste links to files hosted elsewhere (https only).</p>
+
+        <h3 id="backend-google-play">Step 7: Google Play (Premium)</h3>
+        <p><strong>A. Service account (purchase verification)</strong></p>
+        <ul class="step-list">
+            <li>Play Console &gt; <strong>Setup &gt; API access</strong>: link a Google Cloud project.</li>
+            <li>In Google Cloud &gt; IAM, create a <strong>service account</strong> and download a JSON key.</li>
+            <li>Back in Play Console, invite the service account under <strong>Users and permissions</strong> and grant <em>View financial data</em> and <em>Manage orders and subscriptions</em>.</li>
+            <li>Set <code>GOOGLE_PLAY_PACKAGE_NAME</code> (your app's package name) and <code>GOOGLE_PLAY_SERVICE_ACCOUNT_JSON</code> (JSON or base64). Until this is done, purchase verification answers 503.</li>
+        </ul>
+        <p><strong>B. Real-time developer notifications (recommended)</strong> &mdash; tell the backend about renewals, cancellations and refunds.</p>
+        <ul class="step-list">
+            <li>Generate a secret: <code>openssl rand -hex 24</code> and set it as <code>GOOGLE_PLAY_RTDN_TOKEN</code>.</li>
+            <li>In Google Cloud <strong>Pub/Sub</strong>, create a topic (for example <code>play-billing</code>) and add <code>google-play-developer-notifications@system.gserviceaccount.com</code> as <strong>Pub/Sub Publisher</strong>.</li>
+            <li>Create a <strong>push subscription</strong> on the topic with the endpoint<br><code>https://api.yourdomain.com/api/v1/purchases/google/rtdn?token=&lt;GOOGLE_PLAY_RTDN_TOKEN&gt;</code><br>(Pub/Sub cannot send custom headers, so the secret goes in the URL; the backend hides it in its logs.)</li>
+            <li><em>Optional, stronger:</em> enable authentication on the push subscription and set <code>GOOGLE_PLAY_RTDN_AUDIENCE</code> to the audience you configured.</li>
+            <li>Play Console &gt; <strong>Monetization setup &gt; Real-time developer notifications</strong>: enter the full topic name and click <strong>Send test notification</strong>.</li>
+        </ul>
+        <p>Without notifications, subscription changes are picked up when the app re-verifies and by an hourly expiry job. Refunds and revocations are always re-checked with Google before Premium is removed.</p>
+
+        <h3>Step 8: Expiring audio links (optional)</h3>
+        <p>By default, audio URLs on your R2 domain are permanent. To make them expire, deploy the included worker <code>docs/media-signing-worker.js</code>:</p>
+        <ul class="step-list">
+            <li>Cloudflare &gt; <strong>Workers &amp; Pages &gt; Create</strong>, paste the file and deploy.</li>
+            <li>Worker <strong>Settings &gt; Variables</strong>: add the secret <code>MEDIA_URL_SIGNING_SECRET</code> (a long random value) and the variable <code>PROTECTED_PREFIXES</code>, for example <code>harmonia/audio/,harmonia/audio-variants/</code>.</li>
+            <li>Worker <strong>Triggers &gt; Routes</strong>: add <code>cdn.yourdomain.com/*</code> (your R2 public domain).</li>
+            <li>Set the same <code>MEDIA_URL_SIGNING_SECRET</code> in the backend <code>.env</code> (and optionally <code>MEDIA_URL_TTL_SEC</code>, default 43200 = 12 hours) and restart.</li>
+        </ul>
+        <p>Images and videos stay public; protected audio needs a valid signature, which the backend adds automatically.</p>
+
+        <h3>Troubleshooting</h3>
+        <table class="doc-table">
+            <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
+            <tbody>
+                <tr><td>Server stops at start with a configuration error</td><td>Read the message; it names the variable to change (see the production safety check above).</td></tr>
+                <tr><td><code>ECONNREFUSED</code> or "password authentication failed"</td><td>Check <code>DB_*</code> values and that PostgreSQL is running and accepts connections.</td></tr>
+                <tr><td>"Server cannot verify tokens: FIREBASE_SERVICE_ACCOUNT_JSON is not configured"</td><td>Set the Firebase service account (step 3). It must belong to the same Firebase project as the app.</td></tr>
+                <tr><td>Port 7001 already in use</td><td>Change <code>PORT</code> in <code>.env</code> and in your nginx <code>proxy_pass</code>.</td></tr>
+                <tr><td>Uploads fail with 413</td><td>Raise <code>client_max_body_size</code> in nginx.</td></tr>
+                <tr><td>Uploads fail with 503</td><td>R2 variables are missing or wrong (step 6).</td></tr>
+                <tr><td>Purchase verification fails with 503</td><td>Google Play service account not configured (step 7).</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="admin-panel-setup">
+        <h2>14. Admin Panel Setup (Next.js)</h2>
+        <p>The admin panel lives in <code>Admin-Panel/</code>. It is a Next.js 15 web app that talks to the backend.</p>
+
+        <h3>Step 1: Install and configure</h3>
+<pre><code>cd Admin-Panel
+npm ci
+cp .env.example .env.local</code></pre>
+        <p>Set <code>NEXT_PUBLIC_API_URL</code> to your backend <strong>including</strong> <code>/api/v1</code>:</p>
+<pre><code>NEXT_PUBLIC_API_URL=http://localhost:7001/api/v1          # local
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api/v1     # production</code></pre>
+        <div class="alert">
+            <code>NEXT_PUBLIC_API_URL</code> is built into the browser code. Never put a secret there, and run <code>npm run build</code> again after changing it.
+        </div>
+
+        <h3>Step 2: Run</h3>
+<pre><code>npm run dev        # http://localhost:3000</code></pre>
+        <p>Sign in with the super admin from the backend's <code>ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD</code>.</p>
+
+        <h3>Step 3: Go live</h3>
+<pre><code>npm ci
+npm run build
+# edit cwd in prod.config.js, then:
+pm2 start prod.config.js     # runs "next start" on port 3000</code></pre>
+        <p>Put nginx in front with HTTPS:</p>
+<pre><code>server {
+    server_name admin.yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}</code></pre>
+        <p>Then add <code>https://admin.yourdomain.com</code> to the backend's <code>CORS_ORIGINS</code> and restart the backend. Vercel also works: import the project, set <code>NEXT_PUBLIC_API_URL</code> in the project settings and deploy.</p>
+
+        <h3>Roles</h3>
+        <table class="doc-table">
+            <thead><tr><th>Role</th><th>Can do</th></tr></thead>
+            <tbody>
+                <tr><td><strong>viewer</strong></td><td>Read the dashboard and content</td></tr>
+                <tr><td><strong>editor</strong></td><td>Everything a viewer can, plus create, edit and delete content, banners, notifications, plans, ads and app config</td></tr>
+                <tr><td><strong>super_admin</strong></td><td>Everything, plus staff accounts, the audit log, granting or revoking Premium and erasing app users</td></tr>
+            </tbody>
+        </table>
+
+        <h3>What you can manage</h3>
+        <table class="doc-table">
+            <thead><tr><th>Page</th><th>What it does</th></tr></thead>
+            <tbody>
+                <tr><td>Dashboard</td><td>Users, active listeners, Premium users, plays, likes, downloads, catalogue totals, plays per day, top songs</td></tr>
+                <tr><td>Search analytics</td><td>Top and zero-result searches, clicks; pin or hide trending searches</td></tr>
+                <tr><td>Home sections</td><td>Create, order and schedule Home sections: layout, content source (manual, new releases, trending, for you, recently played) and items</td></tr>
+                <tr><td>Banners</td><td>Home banner carousel linking to an album, playlist, artist, Premium or a URL</td></tr>
+                <tr><td>Songs</td><td>Upload audio and cover, lyrics, credits and licence, Premium flag, stream qualities (64/128/256 kbps), retry failed conversions, Excel bulk upload</td></tr>
+                <tr><td>Albums / Playlists / Artists</td><td>Create and edit with track pickers, Premium flags and Excel bulk upload</td></tr>
+                <tr><td>Moods &amp; genres</td><td>Categories shown on Explore and in onboarding</td></tr>
+                <tr><td>Shorts</td><td>Short music clips</td></tr>
+                <tr><td>App users</td><td>Search, view details, ban, grant or revoke Premium, erase a user</td></tr>
+                <tr><td>Subscriptions</td><td>Subscribers, estimated monthly revenue, plan mix, CSV export</td></tr>
+                <tr><td>Premium plans</td><td>Plans with Google Play IDs, and the Premium screen texts</td></tr>
+                <tr><td>Ads</td><td>AdMob unit IDs per platform and interstitial frequency</td></tr>
+                <tr><td>App config</td><td>Minimum and latest app version (force update), maintenance mode, store links, privacy policy, terms, support e-mail</td></tr>
+                <tr><td>Push notifications</td><td>Compose, target (all, Premium, free or one user), schedule, test and send</td></tr>
+                <tr><td>Admin users / Audit log</td><td>Staff accounts and a log of every change (super admin only)</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Troubleshooting</h3>
+        <table class="doc-table">
+            <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
+            <tbody>
+                <tr><td>Every request returns 404</td><td><code>NEXT_PUBLIC_API_URL</code> is missing <code>/api/v1</code></td></tr>
+                <tr><td>Login fails with a network or CORS error</td><td>Add the panel's address to the backend's <code>CORS_ORIGINS</code> and restart the backend</td></tr>
+                <tr><td>A changed <code>.env.local</code> value has no effect</td><td>Run <code>npm run build</code> again</td></tr>
+                <tr><td>Port 3000 is in use</td><td>Change <code>-p 3000</code> in the <code>start</code> script in <code>package.json</code></td></tr>
+                <tr><td>Forgot the admin password</td><td>Another super admin can set a new password through the API (<code>PATCH /api/v1/admin/users/:id</code> with <code>password</code>). If you are the only admin, delete your row from <code>admin_users</code> and restart the backend with new <code>ADMIN_EMAIL</code>/<code>ADMIN_PASSWORD</code></td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="api-reference">
+        <h2>15. API Reference</h2>
+        <p>All endpoints live under <code>https://api.yourdomain.com/api/v1</code>. The full, always-current reference is the <strong>Swagger UI</strong> at <code>/api</code> on a development server. This section covers the conventions and the most important calls.</p>
+
+        <h3>Conventions</h3>
+        <ul class="step-list">
+            <li>Requests and responses are JSON (uploads use <code>multipart/form-data</code> with a field named <code>file</code>).</li>
+            <li>Unknown fields in request bodies are removed; invalid fields return 400 with a list of messages.</li>
+            <li>IDs are UUIDs, except app user IDs (the Firebase UID) and Premium plan IDs (integers).</li>
+            <li>Rate limits: 300 requests per minute per app install and 1500 per minute per IP by default (<code>RATE_LIMIT_PER_MIN</code>, <code>RATE_LIMIT_IP_PER_MIN</code>); admin login and password changes allow 10 per minute. Over the limit you get 429.</li>
+        </ul>
+
+        <h3>The response envelope</h3>
+        <p>Successful responses are wrapped like this:</p>
+<pre><code>{
+  "data": { ... },          // the actual result
+  "isArray": false,
+  "path": "/api/v1/songs/3f2c...",
+  "duration": "12ms",
+  "method": "GET"
+}</code></pre>
+        <p>Some older endpoints put their own <code>{ "status", "message", "data" }</code> object inside <code>data</code>; the app and admin panel handle both forms.</p>
+
+        <h3>Errors</h3>
+<pre><code>// 400 validation error
+{ "statusCode": 400, "timestamp": "2026-10-16T10:00:00.000Z", "path": "/api/v1/songs/create",
+  "message": ["thumbnail must be an https URL", "title should not be empty"], "error": "Bad Request" }
+
+// 404
+{ "statusCode": 404, "timestamp": "...", "path": "/api/v1/songs/...", "message": "Song not found", "error": "Not Found" }
+
+// 401 when a device was signed out remotely
+{ "statusCode": 401, "timestamp": "...", "path": "...", "code": "DEVICE_REVOKED",
+  "message": "This device was signed out from another device" }</code></pre>
+        <table class="doc-table">
+            <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+            <tbody>
+                <tr><td>200 / 201 / 202 / 204</td><td>Success (202 for play and search events, 204 for deletes without a body)</td></tr>
+                <tr><td>400</td><td>Invalid input</td></tr>
+                <tr><td>401</td><td>Missing, invalid or expired token; device signed out</td></tr>
+                <tr><td>403</td><td>Admin role not allowed, or the app user is banned</td></tr>
+                <tr><td>404</td><td>Not found</td></tr>
+                <tr><td>409</td><td>Conflict, e.g. an admin with this e-mail exists, or a purchase belongs to another account</td></tr>
+                <tr><td>429</td><td>Too many requests</td></tr>
+                <tr><td>500</td><td>Unexpected server error ("Internal server error"; details are only in the server log)</td></tr>
+                <tr><td>503</td><td>A required service is not configured (R2, Google Play, RTDN token)</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Authentication</h3>
+        <p><strong>App users</strong> sign in with Firebase in the app. Every request sends the Firebase ID token and the install's device ID:</p>
+<pre><code>Authorization: Bearer &lt;Firebase ID token&gt;
+x-device-id: &lt;stable id per app install&gt;</code></pre>
+        <p>There is no separate register endpoint: the user record is created on the first authenticated request. Many read endpoints also work without a token (guest mode).</p>
+
+        <p><strong>Admins</strong> log in with e-mail and password:</p>
+<pre><code>POST /api/v1/admin/auth/login
+{ "email": "admin@yourdomain.com", "password": "your-password" }
+
+// response (inside "data")
+{ "access_token": "&lt;JWT&gt;", "expires_in": "24h",
+  "admin": { "id": "uuid", "email": "admin@yourdomain.com", "name": "Super Admin",
+             "role": "super_admin", "is_active": true, "last_login_at": "..." } }</code></pre>
+        <p>Send the token as <code>Authorization: Bearer &lt;JWT&gt;</code> on admin requests. Other admin auth calls: <code>GET /admin/auth/me</code> and <code>POST /admin/auth/change-password</code> with <code>{ "current_password", "new_password" }</code>.</p>
+
+        <h3>Example: the Home feed</h3>
+<pre><code>GET /api/v1/home?page=1&amp;limit=10        (token optional)
+
+{ "status": true, "message": "Home data fetched successfully",
+  "pagination": { "page": 1, "limit": 10, "total": 7, "totalPages": 1, "isLastPage": true },
+  "data": [
+    { "title": "Banners", "type": "banner_carousel", "id": "banners",
+      "items": [ { "id": "uuid", "title": "...", "image": "https://...", "redirectType": "playlist", "target_id": "uuid" } ] },
+    { "title": "Top hits", "type": "song_horizontal_cards", "id": "uuid",
+      "items": [ { "id": "uuid", "title": "...", "image": "...", "redirectType": "song", "is_premium": true,
+                   "songs": [ { "id": "uuid", "title": "...", "artist": "...", "duration": 180,
+                                "file_path": null, "audio_variants": null, "is_premium": true, "is_locked": true } ] } ] }
+  ] }</code></pre>
+        <p>Section types: <code>banner_carousel</code>, <code>play_list_horizontal_cards</code>, <code>full_playlist_songs_horizontal_cards</code>, <code>song_horizontal_cards</code>, <code>artist_songs_horizontal_cards</code>, <code>horizontal_artist_list</code>, <code>shorts_horizontal_cards</code>, <code>recent_played_horizontal_cards</code>, <code>mood_chips_horizontal</code>, <code>genre_horizontal_cards</code>.</p>
+
+        <h3>Example: a song</h3>
+<pre><code>GET /api/v1/songs/{id}        (token optional)
+
+{ "id": "uuid", "title": "...", "artist": "Artist name", "featured": "Feat A",
+  "thumbnail": "https://cdn.../cover.jpg", "duration": 215,
+  "file_path": "https://cdn.../harmonia/audio/2026-10/x.mp3?exp=...&amp;sig=...",
+  "audio_qualities": ["low", "normal", "high"],
+  "audio_variants": { "low": "https://...m4a", "normal": "...", "high": "..." },
+  "variants_status": "ready",
+  "lyrics": [ { "time": 0, "text": "First line" } ],
+  "is_premium": false, "is_locked": false }</code></pre>
+        <p>When a song is Premium and the caller is not, the response has <code>"is_locked": true</code>, <code>"file_path": null</code> and <code>"audio_variants": null</code>.</p>
+
+        <h3>Example: search</h3>
+<pre><code>GET /api/v1/search?q=love&amp;limit=20&amp;type=song
+
+[ { "id": "uuid", "name": "Love Song", "type": "SONG", "image": "...", "artist": "...",
+    "artist_id": "uuid", "duration": 200, "is_premium": false } ]</code></pre>
+        <p>Also: <code>GET /search/page?q=&amp;offset=&amp;limit=</code> returns <code>{ "items": [...], "next_offset": 20 }</code>, <code>GET /search/suggest?q=</code> and <code>GET /search/trending</code>.</p>
+
+        <h3>Example: report playback</h3>
+<pre><code>POST /api/v1/plays        (token optional, x-device-id recommended) → 202
+
+{ "song_id": "uuid", "source_type": "playlist", "source_id": "uuid",
+  "position_ms": 45000, "duration_ms": 215000, "completed": false, "platform": "android" }</code></pre>
+        <p>A play counts after 30 seconds or when the song finishes. <code>POST /plays/batch</code> accepts <code>{ "events": [...] }</code> with up to 200 events.</p>
+
+        <h3>Example: verify a Google Play purchase</h3>
+<pre><code>POST /api/v1/purchases/google/verify        (token required)
+
+{ "purchase_token": "&lt;from Google Play&gt;", "product_id": "premium_single", "backend_plan_id": 1 }
+
+// response
+{ "is_premium": true, "status": "active", "platform": "android", "plan_id": 1,
+  "product_id": "premium_single", "base_plan_id": "monthly",
+  "expires_at": "2026-11-16T10:00:00.000Z", "auto_renew": true }</code></pre>
+        <p><code>GET /me/entitlement</code> returns the same object for the signed-in user.</p>
+
+        <h3>Example: create a song (admin)</h3>
+<pre><code>POST /api/v1/songs/create        (admin token, editor or super_admin)
+
+{ "title": "My Song", "thumbnail": "https://cdn.yourdomain.com/.../cover.jpg",
+  "file_path": "https://cdn.yourdomain.com/.../audio.mp3", "duration": 215,
+  "artist_id": "uuid", "is_premium": false, "tags": "pop,summer",
+  "lyric": [ { "time": 0, "text": "First line" } ],
+  "audio_qualities": ["low", "normal", "high"],
+  "credit": "Artist - Title", "license": "CC BY 4.0", "license_url": "https://...", "source_url": "https://..." }</code></pre>
+        <p><code>title</code>, <code>thumbnail</code> and <code>file_path</code> are required; <code>thumbnail</code> and <code>file_path</code> must be https URLs. Upload files first with <code>POST /admin/uploads?kind=image|audio|video</code> (returns <code>{ url, key, kind, mime, size }</code>).</p>
+
+        <h3>Endpoint groups</h3>
+        <p>Access: <strong>public</strong> (no token), <strong>optional</strong> (works for guests, richer when signed in), <strong>user</strong> (Firebase token), <strong>admin</strong> (any admin role), <strong>editor</strong> (editor or super admin), <strong>super</strong> (super admin).</p>
+        <table class="doc-table">
+            <thead><tr><th>Group</th><th>Main endpoints</th><th>Access</th></tr></thead>
+            <tbody>
+                <tr><td>Home</td><td><code>GET /home</code></td><td>optional</td></tr>
+                <tr><td>Songs</td><td><code>GET /songs/:id</code>, <code>GET /songs/:id/radio</code>, <code>GET /credits</code></td><td>optional / public</td></tr>
+                <tr><td>Songs (admin)</td><td><code>POST /songs/create</code>, <code>GET /songs/list</code>, <code>PATCH /songs/update/:id</code>, <code>DELETE /songs/:id</code>, <code>POST /songs/qualities</code>, <code>POST /songs/bulk-upload</code></td><td>admin / editor</td></tr>
+                <tr><td>Artists</td><td><code>GET /artists</code>, <code>GET /artists/:id</code>; create, edit, delete, bulk upload</td><td>public / optional; editor</td></tr>
+                <tr><td>Albums, catalogue playlists</td><td><code>/album</code>, <code>/playlist</code> (create, list, edit, delete, bulk upload)</td><td>admin / editor</td></tr>
+                <tr><td>Collections</td><td><code>GET /category/collections/:categoryId</code>, <code>GET /category/collections/album-playlist-by-id/:id</code>, <code>GET /collections/:id/related</code></td><td>optional</td></tr>
+                <tr><td>Categories</td><td><code>GET /category</code>, <code>GET /category/:id</code>; admin section management</td><td>public; admin / editor</td></tr>
+                <tr><td>Shorts</td><td><code>GET /shorts/get-all-with-includes</code>, <code>GET /shorts/:id</code>, <code>POST/DELETE /shorts/:id/like</code></td><td>optional / public / user</td></tr>
+                <tr><td>User playlists</td><td><code>/playlists/me</code>, <code>POST /playlists</code>, <code>PATCH/DELETE /playlists/:id</code>, add/remove/reorder songs</td><td>user</td></tr>
+                <tr><td>Library</td><td><code>/library/items</code>, <code>/library/liked-songs</code>, <code>/library/saved</code></td><td>user</td></tr>
+                <tr><td>Plays and history</td><td><code>POST /plays</code>, <code>POST /plays/batch</code>, <code>/me/continue-listening</code>, <code>/me/history</code></td><td>optional / user</td></tr>
+                <tr><td>Search</td><td><code>/search</code>, <code>/search/page</code>, <code>/search/suggest</code>, <code>/search/trending</code>, <code>POST /search/events</code></td><td>public / optional</td></tr>
+                <tr><td>Profile</td><td><code>GET/PATCH/DELETE /users/me</code>, <code>POST /users/me/photo</code></td><td>user</td></tr>
+                <tr><td>Taste</td><td><code>GET /onboarding/options</code>, <code>GET/PUT /me/preferences</code></td><td>public / user</td></tr>
+                <tr><td>Devices</td><td><code>POST/GET /me/devices</code>, <code>DELETE /me/devices/session/:id</code>, <code>DELETE /me/devices/:token</code></td><td>optional / user</td></tr>
+                <tr><td>Premium and ads</td><td><code>GET /premium/config</code>, <code>GET /ads/config</code>, <code>GET /me/entitlement</code>, <code>POST /purchases/google/verify</code>, <code>POST /purchases/google/rtdn</code></td><td>public / user / secret token</td></tr>
+                <tr><td>App config</td><td><code>GET /app/config?platform=android|ios</code></td><td>public</td></tr>
+                <tr><td>Admin: stats</td><td><code>/admin/stats/overview</code>, <code>/admin/stats/top-songs</code>, <code>/admin/stats/daily-plays</code>, <code>/admin/stats/search</code></td><td>admin</td></tr>
+                <tr><td>Admin: content</td><td><code>/admin/banners</code>, <code>/admin/uploads</code>, <code>/admin/notifications</code>, <code>/admin/search/trending</code></td><td>editor</td></tr>
+                <tr><td>Admin: business</td><td><code>/admin/premium/plans</code>, <code>/admin/premium/page-settings</code>, <code>/admin/ads/settings</code>, <code>/admin/app-config</code>, <code>/admin/subscriptions</code>, <code>/admin/app-users</code></td><td>admin read, editor write</td></tr>
+                <tr><td>Admin: staff</td><td><code>/admin/users</code>, <code>/admin/audit-logs</code>, grant/revoke Premium, erase app user</td><td>super</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="database-schema">
+        <h2>16. Database Schema</h2>
+        <p>PostgreSQL, managed with TypeORM. Tables are defined in <code>src/modules/*/entities/*.entity.ts</code>; production changes ship as migrations in <code>db/migrations/</code> and run automatically when the server starts.</p>
+
+        <h3>Conventions</h3>
+        <ul class="step-list">
+            <li>Most tables share <code>id</code> (uuid), <code>createdAt</code>, <code>updatedAt</code> and <code>isDeleted</code> (soft delete).</li>
+            <li>App users are keyed by their Firebase UID (<code>varchar(128)</code>).</li>
+            <li>Lists such as lyrics, audio variants and plan features are stored as <code>jsonb</code>.</li>
+            <li>Search uses the <code>pg_trgm</code> extension, created automatically at start when the database user is allowed to; otherwise search falls back to simple matching.</li>
+        </ul>
+
+        <h3>Tables by area</h3>
+        <table class="doc-table">
+            <thead><tr><th>Area</th><th>Tables</th></tr></thead>
+            <tbody>
+                <tr><td>Catalogue</td><td><code>songs</code>, <code>song_artists</code>, <code>artists</code>, <code>album</code>, <code>album_songs</code>, <code>album_artists</code>, <code>album_categories</code>, <code>playlist</code>, <code>playlist_songs</code>, <code>playlist_categories</code>, <code>shorts</code>, <code>shorts_categories</code>, <code>shorts_likes</code>, <code>categories</code>, <code>category_artists</code>, <code>category_songs</code>, <code>banners</code></td></tr>
+                <tr><td>Users and library</td><td><code>users</code>, <code>user_liked_songs</code>, <code>user_saved_library_items</code>, <code>user_preferences</code>, <code>user_devices</code></td></tr>
+                <tr><td>Listening</td><td><code>play_events</code>, <code>song_stats</code>, <code>user_listening</code>, <code>search_events</code>, <code>search_trending_overrides</code></td></tr>
+                <tr><td>Billing and ads</td><td><code>subscription_plans</code>, <code>user_subscriptions</code>, <code>premium_page_settings</code>, <code>ads_settings</code></td></tr>
+                <tr><td>Operations</td><td><code>app_config</code>, <code>push_notifications</code>, <code>admin_users</code>, <code>admin_audit_logs</code>, <code>migrations</code></td></tr>
+            </tbody>
+        </table>
+
+        <h3>Key tables</h3>
+        <table class="doc-table">
+            <thead><tr><th>Table</th><th>Important columns</th></tr></thead>
+            <tbody>
+                <tr><td><code>songs</code></td><td><code>title</code>, <code>thumbnail</code>, <code>file_path</code>, <code>duration</code> (seconds), <code>lyric</code> (jsonb <code>[{time,text}]</code>), <code>artist_id</code>, <code>is_premium</code>, <code>audio_qualities</code>, <code>audio_variants</code> (jsonb), <code>variants_status</code>, <code>loudness_lufs</code>, <code>credit</code>, <code>license</code>, <code>license_url</code>, <code>source_url</code></td></tr>
+                <tr><td><code>artists</code></td><td><code>name</code>, <code>bio</code>, <code>image_url</code>, <code>dominant_color</code></td></tr>
+                <tr><td><code>album</code></td><td><code>name</code>, <code>description</code>, <code>cover_url</code>, <code>is_premium</code>, <code>duration</code></td></tr>
+                <tr><td><code>playlist</code></td><td><code>name</code>, <code>cover_url</code>, <code>owner_id</code> (Firebase UID; empty for catalogue playlists), <code>creator_type</code>, <code>is_public</code>, <code>is_premium</code></td></tr>
+                <tr><td><code>categories</code></td><td>Home sections, moods and genres: <code>name</code>, <code>kind</code>, <code>type</code> (layout), <code>source</code>, <code>item_order</code>, <code>position</code>, <code>is_active</code>, <code>starts_at</code>, <code>ends_at</code>, <code>show_on_explore</code></td></tr>
+                <tr><td><code>users</code></td><td><code>id</code> (Firebase UID), <code>email</code>, <code>name</code>, <code>photo_url</code>, <code>provider</code>, <code>is_banned</code>, <code>last_seen_at</code></td></tr>
+                <tr><td><code>user_subscriptions</code></td><td><code>user_id</code>, <code>platform</code>, <code>purchase_token</code> (unique), <code>plan_id</code>, <code>product_id</code>, <code>status</code>, <code>expires_at</code>, <code>auto_renew</code></td></tr>
+                <tr><td><code>subscription_plans</code></td><td><code>name</code>, <code>platforms</code>, <code>payment_providers</code>, <code>google_product_id</code>, <code>google_base_plan_id</code>, <code>google_offer_id</code>, <code>has_trial</code>, <code>trial_days</code>, <code>features</code>, <code>is_active</code>, <code>sort_order</code></td></tr>
+                <tr><td><code>play_events</code></td><td>One row per listening session: <code>user_id</code> (empty for guests), <code>song_id</code>, <code>source_type</code>, <code>position_ms</code>, <code>duration_ms</code>, <code>completed</code>, <code>counted</code></td></tr>
+                <tr><td><code>user_devices</code></td><td><code>token</code> (FCM), <code>user_id</code>, <code>platform</code>, <code>device_id</code>, <code>device_name</code>, <code>push_enabled</code>, <code>revoked_at</code></td></tr>
+                <tr><td><code>admin_users</code></td><td><code>email</code> (unique), <code>password_hash</code> (bcrypt, never returned), <code>name</code>, <code>role</code>, <code>is_active</code></td></tr>
+                <tr><td><code>app_config</code></td><td>Single row: min/latest versions per platform, force-update and maintenance messages, store URLs, privacy and terms URLs, support e-mail</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Enum values</h3>
+        <table class="doc-table">
+            <thead><tr><th>Enum</th><th>Values</th></tr></thead>
+            <tbody>
+                <tr><td>Admin role</td><td>super_admin, editor, viewer</td></tr>
+                <tr><td>Category kind</td><td>section, mood, genre</td></tr>
+                <tr><td>Category source</td><td>manual, new_releases, trending, for_you, recently_played</td></tr>
+                <tr><td>Banner / notification target</td><td>none (notifications only), album, playlist, artist, premium, url</td></tr>
+                <tr><td>Notification audience</td><td>all, premium, free, user</td></tr>
+                <tr><td>Notification status</td><td>draft, scheduled, sending, sent, failed</td></tr>
+                <tr><td>Library saved kind</td><td>playlist, album, artist, download</td></tr>
+                <tr><td>Play source</td><td>album, playlist, artist, shorts, search, library, autoplay, other</td></tr>
+                <tr><td>Subscription status</td><td>pending, active, canceled, in_grace_period, on_hold, paused, expired, revoked, unknown (Premium = active, canceled or in_grace_period with a future expiry)</td></tr>
+                <tr><td>Subscription platform</td><td>android, ios, manual</td></tr>
+                <tr><td>Payment provider</td><td>google_play, app_store</td></tr>
+                <tr><td>Audio variant status</td><td>none, pending, processing, ready, failed</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Migrations</h3>
+<pre><code>npm run migration:show       # list applied and pending migrations
+npm run migration:run        # apply pending migrations manually
+npm run migration:revert     # undo the last migration</code></pre>
+        <p>A fresh production database is created entirely by the migrations on first start.</p>
+
+        <h3>Backups</h3>
+<pre><code>pg_dump -Fc -d harmonia -f harmonia-$(date +%F).dump      # back up
+pg_restore -d harmonia --clean harmonia-2026-10-16.dump      # restore</code></pre>
+        <p>Schedule a daily backup (for example with cron) and keep copies off the server. Media files are in R2, so back up the bucket separately if needed.</p>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="faq">
+        <h2>17. FAQ and Common Build Errors</h2>
+
+        <h3>Before anything else</h3>
+        <ul class="step-list">
+            <li>Run <code>flutter doctor</code> and fix every item it reports.</li>
+            <li>Run <code>flutter clean</code> then <code>flutter pub get</code>, and try again.</li>
+        </ul>
+
+        <h3>Flutter app</h3>
+        <table class="doc-table">
+            <thead><tr><th>Error or problem</th><th>Fix</th></tr></thead>
+            <tbody>
+                <tr><td>"Unsupported class file major version" / Gradle fails to start</td><td>Your JDK is too new. Use JDK 17 or 21: <code>flutter config --jdk-dir "&lt;Android Studio&gt;/jbr"</code></td></tr>
+                <tr><td>"Your project's Gradle / Android Gradle Plugin / Kotlin version is lower than Flutter's minimum"</td><td>Use Flutter 3.47.x as tested. On a newer Flutter, raise the versions in <code>android/settings.gradle.kts</code> and <code>android/gradle/wrapper/gradle-wrapper.properties</code> to the values in the message</td></tr>
+                <tr><td>"No matching client found for package name"</td><td><code>google-services.json</code> does not match <code>applicationId</code>. Download it again for your package name</td></tr>
+                <tr><td>Google sign-in fails on Android (error 10 / DEVELOPER_ERROR)</td><td>Add the SHA-1 and SHA-256 of the key you are running with (debug, upload or Play app signing) in Firebase, then download <code>google-services.json</code> again</td></tr>
+                <tr><td>Google sign-in crashes on iOS</td><td>Add the <code>REVERSED_CLIENT_ID</code> URL scheme (section 5)</td></tr>
+                <tr><td>Nothing loads; every screen is empty</td><td>Check <code>apiHost</code> (section 8). On an Android emulator use <code>http://10.0.2.2:7001</code>, not <code>localhost</code></td></tr>
+                <tr><td>Sign-in works but API calls return 401</td><td>The backend's Firebase service account belongs to a different Firebase project than the app</td></tr>
+                <tr><td>Songs show a lock</td><td>They are Premium (or inside a Premium album). Sign in with a Premium account, or grant Premium from the admin panel</td></tr>
+                <tr><td>CocoaPods errors (<code>pod install</code> fails)</td><td><code>cd ios &amp;&amp; pod repo update &amp;&amp; pod install</code>. If it still fails, delete <code>ios/Pods</code> and <code>ios/Podfile.lock</code> and run <code>pod install</code> again</td></tr>
+                <tr><td>iOS "No signing certificate" / "requires a development team"</td><td>Select your Team in Xcode (Runner &gt; Signing &amp; Capabilities)</td></tr>
+                <tr><td>iOS minimum version errors from pods</td><td>Set the Runner target's Minimum Deployments to 15.0 to match the Podfile</td></tr>
+                <tr><td>Push notifications do not arrive on iOS</td><td>Add the Push Notifications capability and upload an APNs key in Firebase (section 5). Test on a real device</td></tr>
+                <tr><td>Premium plans do not appear</td><td>The app is not installed from Google Play (use a testing track), the plan IDs do not match Play Console, or the plan is inactive in the admin panel</td></tr>
+                <tr><td>Ads show "Test Ad"</td><td>Expected with the default test IDs. Set your own App ID (section 10) and unit IDs (admin panel &gt; Ads)</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Backend and admin panel</h3>
+        <p>See the troubleshooting tables in <a href="#backend-setup">section 13</a> and <a href="#admin-panel-setup">section 14</a>.</p>
+
+        <h3>General questions</h3>
+        <table class="doc-table">
+            <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+            <tbody>
+                <tr><td>Is music included?</td><td>No. The demo uses Creative Commons tracks for demonstration only. You must own or license every track you publish.</td></tr>
+                <tr><td>Can I sell Premium on iOS?</td><td>Not in this version: Apple In-App Purchase verification is not included. iOS listeners use the free tier, and you can grant Premium manually from the admin panel.</td></tr>
+                <tr><td>Can I add another payment gateway?</td><td>Yes, as custom development. Premium is stored in <code>user_subscriptions</code>, so a new provider only needs to create rows there after a verified payment.</td></tr>
+                <tr><td>Do I need Cloudflare R2?</td><td>Yes for uploads from the admin panel. You can also paste https links to files hosted elsewhere.</td></tr>
+                <tr><td>Can I host the backend and admin panel on one server?</td><td>Yes. Use two nginx server blocks (for example <code>api.</code> and <code>admin.</code> subdomains).</td></tr>
+                <tr><td>Are any files minified or obfuscated?</td><td>No. All three projects ship as readable source code. Third-party libraries are installed from <code>pubspec.yaml</code> and <code>package.json</code>.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="support">
+        <h2>18. Support</h2>
+        <p>Questions before or after purchase? Please use the <strong>Support</strong> tab on the CodeCanyon item page. All support is handled through the official Envato item support system.</p>
+        <p>When you ask for help, include the section you are on, the exact error message, and the output of <code>flutter doctor</code> (for app issues) or the server log (for backend issues).</p>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="changelog">
+        <h2>19. Changelog</h2>
+        <h3>Version 1.0.0 &ndash; 16 Oct 2026</h3>
+        <ul>
+            <li>Initial release: Flutter app (Android and iOS), NestJS backend and Next.js admin panel.</li>
+        </ul>
+    </section>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
