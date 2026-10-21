@@ -27,6 +27,7 @@
         <ol>
             <li><a href="#feature-walkthrough">Feature Walkthrough</a></li>
             <li><a href="#third-party-services">Third-Party Services and Costs</a></li>
+            <li><a href="#architecture">How the Pieces Connect (Architecture)</a></li>
             <li><a href="#prerequisites">1. Prerequisites</a></li>
             <li><a href="#environment-setup">2. Environment Setup</a></li>
             <li><a href="#change-package-name">3. Change Package Name and Bundle ID</a></li>
@@ -46,6 +47,7 @@
             <li><a href="#faq">17. FAQ and Common Build Errors</a></li>
             <li><a href="#support">18. Support</a></li>
             <li><a href="#changelog">19. Changelog</a></li>
+            <li><a href="#upgrading">20. Upgrading to a New Version</a></li>
         </ol>
     </div>
 
@@ -139,6 +141,105 @@
                 <tr><td>Meta for Developers</td><td>Optional</td><td>Facebook sign-in</td><td>Free</td></tr>
                 <tr><td>Cloudflare Workers</td><td>Optional</td><td>Expiring audio links (the included worker script)</td><td>Cloudflare, beyond the free tier</td></tr>
                 <tr><td>Music licensing</td><td>Required for real content</td><td>You must own or license every track you publish. No music is included in the package</td><td>Rights holders / licensing bodies</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="architecture">
+        <h2>How the Pieces Connect (Architecture)</h2>
+        <p>Harmonia is three projects that talk to one backend. Only the backend talks to the database and holds secrets; the app and the admin panel never connect to PostgreSQL or R2 credentials directly.</p>
+        <div class="arch-diagram">
+<svg viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Harmonia architecture diagram" font-family="-apple-system, Segoe UI, Roboto, Arial, sans-serif">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6478"/></marker>
+  </defs>
+  <style>
+    .box{stroke-width:2;rx:12}
+    .t{font-size:15px;font-weight:700;fill:#111}
+    .s{font-size:12px;fill:#555}
+    .l{font-size:11.5px;fill:#38404f}
+    .ln{stroke:#5b6478;stroke-width:1.8;fill:none;marker-end:url(#ah)}
+    .dash{stroke-dasharray:6 4}
+  </style>
+  <!-- clients -->
+  <rect class="box" x="20" y="20" width="230" height="86" fill="#e8f8ee" stroke="#13a34a"/>
+  <text class="t" x="135" y="50" text-anchor="middle">Flutter App</text>
+  <text class="s" x="135" y="70" text-anchor="middle">Android and iOS</text>
+  <text class="s" x="135" y="88" text-anchor="middle">Flutter-App/</text>
+
+  <rect class="box" x="610" y="20" width="230" height="86" fill="#efe9ff" stroke="#7c4dff"/>
+  <text class="t" x="725" y="50" text-anchor="middle">Admin Panel</text>
+  <text class="s" x="725" y="70" text-anchor="middle">Next.js, in the browser</text>
+  <text class="s" x="725" y="88" text-anchor="middle">Admin-Panel/</text>
+
+  <!-- backend -->
+  <rect class="box" x="290" y="200" width="280" height="110" fill="#fff6e0" stroke="#d99a00"/>
+  <text class="t" x="430" y="232" text-anchor="middle">Backend API</text>
+  <text class="s" x="430" y="252" text-anchor="middle">NestJS, https://api.your-domain.com/api/v1</text>
+  <text class="s" x="430" y="270" text-anchor="middle">Backend/ (run with PM2)</text>
+  <text class="s" x="430" y="290" text-anchor="middle">auth checks, Premium rules, media processing</text>
+
+  <!-- data -->
+  <rect class="box" x="290" y="440" width="280" height="80" fill="#e9f1ff" stroke="#3b6fd8"/>
+  <text class="t" x="430" y="472" text-anchor="middle">PostgreSQL</text>
+  <text class="s" x="430" y="494" text-anchor="middle">all catalogue, user and billing data</text>
+
+  <rect class="box" x="610" y="440" width="230" height="80" fill="#fdecea" stroke="#e0533d"/>
+  <text class="t" x="725" y="472" text-anchor="middle">Cloudflare R2</text>
+  <text class="s" x="725" y="494" text-anchor="middle">audio, covers, avatars</text>
+
+  <rect class="box" x="20" y="200" width="230" height="110" fill="#fff2e5" stroke="#f57c00"/>
+  <text class="t" x="135" y="230" text-anchor="middle">Firebase</text>
+  <text class="s" x="135" y="252" text-anchor="middle">Authentication (sign-in)</text>
+  <text class="s" x="135" y="270" text-anchor="middle">Cloud Messaging (push)</text>
+
+  <rect class="box" x="20" y="440" width="230" height="80" fill="#eef7f0" stroke="#34a853"/>
+  <text class="t" x="135" y="470" text-anchor="middle">Google Play / AdMob</text>
+  <text class="s" x="135" y="492" text-anchor="middle">subscriptions and ads</text>
+
+  <!-- arrows -->
+  <path class="ln" d="M190,106 L360,198"/>
+  <text class="l" x="282" y="140" text-anchor="middle" transform="rotate(28 282 140)">REST + Firebase ID token</text>
+  <path class="ln" d="M670,106 L500,198"/>
+  <text class="l" x="580" y="140" text-anchor="middle" transform="rotate(-28 580 140)">REST + admin JWT</text>
+
+  <path class="ln" d="M110,106 L110,198"/>
+  <text class="l" x="104" y="160" text-anchor="end">sign in</text>
+  <path class="ln" d="M288,265 L252,265"/>
+  <text class="l" x="270" y="246" text-anchor="middle">verify,</text>
+  <text class="l" x="270" y="290" text-anchor="middle">push</text>
+  <path class="ln dash" d="M160,198 L160,106"/>
+  <text class="l" x="166" y="160">push</text>
+
+  <path class="ln" d="M430,310 L430,438"/>
+  <text class="l" x="436" y="380">TypeORM</text>
+
+  <path class="ln" d="M540,310 L660,438"/>
+  <text class="l" x="612" y="372" text-anchor="start">upload files</text>
+  <path class="ln dash" d="M240,60 C 560,60 600,380 690,438"/>
+  <text class="l" x="610" y="300" text-anchor="start">stream audio</text>
+  <text class="l" x="610" y="314" text-anchor="start">(public / signed URL)</text>
+
+  <path class="ln" d="M60,106 C 5,230 5,380 60,438"/>
+  <text class="l" x="30" y="350" text-anchor="start">buy,</text>
+  <text class="l" x="30" y="364" text-anchor="start">ads</text>
+  <path class="ln dash" d="M250,470 L288,300"/>
+  <text class="l" x="200" y="410" text-anchor="middle">verify purchase,</text>
+  <text class="l" x="200" y="424" text-anchor="middle">RTDN (Pub/Sub)</text>
+</svg>
+        </div>
+        <table class="doc-table">
+            <thead><tr><th>Connection</th><th>What happens</th></tr></thead>
+            <tbody>
+                <tr><td>App &rarr; Firebase</td><td>The listener signs in (email, Google, Facebook or Apple). Firebase returns an ID token.</td></tr>
+                <tr><td>App &rarr; Backend</td><td>Every request goes to <code>https://your-api/api/v1/...</code> with the Firebase ID token in <code>Authorization: Bearer</code> (guests send none). The backend verifies the token with the Firebase Admin SDK.</td></tr>
+                <tr><td>Admin panel &rarr; Backend</td><td>Staff sign in with email and password; the backend returns a JWT that the panel sends on every <code>/admin/...</code> request. Roles: viewer, editor, super admin.</td></tr>
+                <tr><td>Backend &rarr; PostgreSQL</td><td>All data lives here. Only the backend connects.</td></tr>
+                <tr><td>Backend &rarr; R2, App &rarr; R2</td><td>The admin uploads files through the backend, which stores them in R2 and makes the low/normal/high audio versions. The app streams audio and images straight from the R2 public URL (or an expiring signed URL if you enable it).</td></tr>
+                <tr><td>Backend &rarr; Firebase Cloud Messaging</td><td>Push notifications composed in the admin panel are sent by the backend, to the broadcast topic or to registered devices.</td></tr>
+                <tr><td>App &harr; Google Play &rarr; Backend</td><td>The app buys a subscription with Google Play Billing and sends the purchase token to the backend, which checks it with Google. Google then reports renewals and cancellations to the backend through real-time developer notifications (Pub/Sub).</td></tr>
+                <tr><td>App &rarr; AdMob</td><td>Free listeners see AdMob ads. The ad unit IDs come from the backend (<code>GET /ads/config</code>), set on the admin panel's Ads page.</td></tr>
             </tbody>
         </table>
     </section>
@@ -270,14 +371,23 @@ flutter gen-l10n</code></pre>
         </ul>
 
         <div class="alert">
-            <strong>Tip:</strong> the Dart package name in <code>pubspec.yaml</code> (<code>prime_music</code>) is internal and never shown to users. Leave it as is; renaming it means rewriting every import.
+            <strong>Tip:</strong> the Dart package name in <code>pubspec.yaml</code> (<code>harmonia</code>) is internal and never shown to users. You can leave it as is; renaming it means updating every <code>package:harmonia/</code> import.
         </div>
     </section>
 
     <!-- ===================================================== -->
     <section id="firebase-setup">
         <h2>4. Firebase Setup</h2>
-        <p>Firebase provides sign-in and push notifications. The package contains our demo Firebase files; <strong>replace them with your own</strong> before you publish.</p>
+        <p>Firebase provides sign-in and push notifications.</p>
+        <div class="alert-warning">
+            <strong>You must use your own Firebase project.</strong> The package ships <strong>placeholder</strong> Firebase files with values such as <code>YOUR_ANDROID_API_KEY</code> and <code>your-firebase-project-id</code>. They let the project compile, but sign-in and push notifications will not work until you replace them:
+            <ul class="step-list" style="margin-top:8px;">
+                <li><code>Flutter-App/lib/firebase_options.dart</code></li>
+                <li><code>Flutter-App/android/app/google-services.json</code></li>
+                <li><code>Flutter-App/ios/Runner/GoogleService-Info.plist</code></li>
+            </ul>
+            No Firebase project of ours is included, so your app never connects to our accounts. Steps 1 and 2 below replace all three files.
+        </div>
 
         <h3>Step 1: Create a Firebase project</h3>
         <ul class="step-list">
@@ -341,6 +451,9 @@ flutterfire configure --project=&lt;your-firebase-project-id&gt;</code></pre>
         </ul>
 
         <h3>Facebook</h3>
+        <div class="alert">
+            <strong>Register your own Facebook app.</strong> Meta's Platform Policy requires every app to use its own App ID. The package contains no Facebook App ID or client token, only the placeholders <code>YOUR_FACEBOOK_APP_ID</code> and <code>YOUR_FACEBOOK_CLIENT_TOKEN</code>. Facebook sign-in stays disabled until you replace them with your own values. If you do not want Facebook sign-in, remove the button (see the top of this section).
+        </div>
         <ul class="step-list">
             <li>Create an app at <a href="https://developers.facebook.com" target="_blank">Meta for Developers</a> and add the <strong>Facebook Login</strong> product.</li>
             <li>In Firebase, enable <strong>Facebook</strong> with your Meta app ID and app secret, and copy the OAuth redirect URI that Firebase shows into the Meta app's <strong>Valid OAuth Redirect URIs</strong>.</li>
@@ -359,7 +472,17 @@ flutterfire configure --project=&lt;your-firebase-project-id&gt;</code></pre>
         <ul class="step-list">
             <li><strong>Android:</strong> works once <code>google-services.json</code> is in place.</li>
             <li><strong>iOS:</strong> in Xcode add the <strong>Push Notifications</strong> capability (Background Modes for audio, fetch and remote notifications are already set in <code>Info.plist</code>). Create an <strong>APNs key</strong> in your Apple Developer account and upload it in Firebase: <strong>Project settings &gt; Cloud Messaging &gt; Apple app configuration</strong>.</li>
-            <li>The app subscribes every device to the topic <code>prime-music</code> for "All users" campaigns. The backend sends to the same topic. If you rename it, change both <code>lib/core/service/push_notification/push_notification_service.dart</code> and the backend's <code>BROADCAST_TOPIC</code> in <code>src/modules/notifications/notifications.service.ts</code>.</li>
+            <li>For "Everyone" campaigns the app subscribes every device to one FCM topic, and the backend sends to it. The default is <code>harmonia</code>. Give your deployment its own topic name and set it in <strong>both</strong> places:
+                <ul>
+                    <li>App: <code>broadcastTopic</code> in <code>lib/core/service/push_notification/push_notification_service.dart</code></li>
+                    <li>Backend: <code>FCM_BROADCAST_TOPIC</code> in <code>.env</code></li>
+                </ul>
+<pre><code>// Flutter-App/lib/core/service/push_notification/push_notification_service.dart
+static const String broadcastTopic = 'mymusic';
+
+# Backend/.env
+FCM_BROADCAST_TOPIC=mymusic</code></pre>
+            </li>
         </ul>
     </section>
 
@@ -395,8 +518,14 @@ flutterfire configure --project=&lt;your-firebase-project-id&gt;</code></pre>
             <li>The animated splash (logo, wordmark and tagline) is drawn in <code>lib/feature/splash/presentation/splash_screen.dart</code>.</li>
         </ul>
         <h3>Brand colours</h3>
+        <p>The brand colours are in <code>lib/core/theme/src/theme_extension/src/colors/semantic.dart</code>. Flutter writes colours as <code>0xAARRGGBB</code>: <code>FF</code> (fully opaque) followed by the normal hex code. The default brand green is <strong>#1DDA63</strong>:</p>
+<pre><code>// lib/core/theme/src/theme_extension/src/colors/semantic.dart
+static const Color primary = Color(0xFF1DDA63);        // brand green #1DDA63
+static const Color darkBackground = Color(0xFF020E28); // dark theme page #020E28
+static const Color darkSurface = Color(0xFF0B1B3D);    // dark cards #0B1B3D</code></pre>
+        <p>Example: to use orange <strong>#FF6B00</strong> as your brand colour, change the first line to <code>Color(0xFFFF6B00)</code>, then stop the app and run it again (hot reload does not update <code>const</code> colours).</p>
         <ul class="step-list">
-            <li>The primary green and the dark/light surface colours are in <code>lib/core/theme/src/theme_extension/src/colors/semantic.dart</code> and <code>lib/core/theme/theme.dart</code>.</li>
+            <li>Theme wiring that uses these colours is in <code>lib/core/theme/theme.dart</code>.</li>
             <li>Page colours that follow light and dark mode are in <code>lib/core/theme/palette.dart</code>. Dark is the default theme; listeners can switch in Settings.</li>
         </ul>
     </section>
@@ -422,11 +551,46 @@ flutterfire configure --project=&lt;your-firebase-project-id&gt;</code></pre>
             <li>All on-screen text is in <code>lib/l10n/app_en.arb</code> (the template) and <code>lib/l10n/app_bn.arb</code>.</li>
             <li>Generated code goes to <code>lib/l10n/gen/</code> (configured in <code>l10n.yaml</code>).</li>
         </ul>
+        <h3>What a language file looks like</h3>
+        <p>Each language is one JSON file of <code>"key": "text"</code> pairs. The keys are the same in every file; only the text changes. Entries starting with <code>@</code> describe placeholders and exist only in the English template. Here is part of the existing English file and its Bangla counterpart:</p>
+<pre><code>// lib/l10n/app_en.arb  (template)
+{
+  "@@locale": "en",
+  "appName": "Harmonia",
+  "settingsTitle": "Settings",
+  "settingsLanguage": "Language",
+  "settingsClearCacheSubtitle": "{size} used by images and temporary files",
+  "@settingsClearCacheSubtitle": {
+    "placeholders": { "size": { "type": "String" } }
+  }
+}
+
+// lib/l10n/app_bn.arb  (existing Bangla)
+{
+  "@@locale": "bn",
+  "appName": "হারমোনিয়া",
+  "settingsTitle": "সেটিংস",
+  "settingsLanguage": "ভাষা",
+  "settingsClearCacheSubtitle": "ছবি আর অস্থায়ী ফাইলে {size} জায়গা নিচ্ছে"
+}</code></pre>
+        <p>A new Spanish file <code>lib/l10n/app_es.arb</code> should contain the same keys, <code>"@@locale": "es"</code>, and keep every <code>{placeholder}</code> exactly as in English:</p>
+<pre><code>// lib/l10n/app_es.arb  (new)
+{
+  "@@locale": "es",
+  "appName": "Harmonia",
+  "settingsTitle": "Ajustes",
+  "settingsLanguage": "Idioma",
+  "settingsClearCacheSubtitle": "{size} usados por imágenes y archivos temporales"
+}</code></pre>
+        <p>Check: <code>flutter gen-l10n</code> finishes without errors and lists no untranslated keys for <code>es</code>. Any key you leave out falls back to English.</p>
+
         <h3>Add a language</h3>
         <ul class="step-list">
-            <li>Copy <code>app_en.arb</code> to <code>app_xx.arb</code> (for example <code>app_es.arb</code>) and translate the values.</li>
-            <li>Add <code>'xx'</code> to <code>supportedLanguages</code> in <code>lib/core/settings/app_settings_cubit.dart</code>.</li>
-            <li>Add the language to the options list in the language tile of <code>lib/feature/profile/presentation/profile/pages/profile_page.dart</code>.</li>
+            <li>Copy <code>app_en.arb</code> to <code>app_xx.arb</code> (for example <code>app_es.arb</code>), set <code>"@@locale": "xx"</code>, delete the <code>@</code> description entries and translate the values.</li>
+            <li>Add <code>'xx'</code> to <code>supportedLanguages</code> in <code>lib/core/settings/app_settings_cubit.dart</code>:
+<pre><code>static const supportedLanguages = ['en', 'bn', 'es'];</code></pre></li>
+            <li>Add the language to the options list in the language tile of <code>lib/feature/profile/presentation/profile/pages/profile_page.dart</code>:
+<pre><code>final options = &lt;String?, String&gt;{null: l10n.settingsLanguageSystem, 'en': 'English', 'bn': 'বাংলা', 'es': 'Español'};</code></pre></li>
             <li>Run <code>flutter gen-l10n</code>.</li>
             <li>If the language uses a new script, add a font fallback in <code>lib/core/theme/app_fonts.dart</code>.</li>
         </ul>
@@ -438,7 +602,22 @@ flutterfire configure --project=&lt;your-firebase-project-id&gt;</code></pre>
     <!-- ===================================================== -->
     <section id="admob">
         <h2>10. AdMob</h2>
-        <p>The app ships with Google's public <strong>test IDs</strong>, so ads show as "Test Ad" and cannot cause policy problems while you develop.</p>
+        <p>The package contains <strong>only Google's official AdMob test IDs</strong> (publisher <code>ca-app-pub-3940256099942544</code>, listed in Google's <a href="https://developers.google.com/admob/android/test-ads" target="_blank">test ads guide</a>). Ads show as "Test Ad" and earn nothing. No publisher ID of ours is included anywhere.</p>
+        <div class="alert-warning">
+            <strong>Replace every test ID with your own before you publish</strong>, or you will earn no ad revenue. Create an app and ad units in your <a href="https://admob.google.com" target="_blank">AdMob account</a> first.
+        </div>
+        <table class="doc-table">
+            <thead><tr><th>Default test value</th><th>Where</th><th>Replace with</th></tr></thead>
+            <tbody>
+                <tr><td><code>ca-app-pub-3940256099942544~3347511713</code></td><td>Android app ID, <code>android/app/build.gradle.kts</code></td><td>your Android AdMob app ID</td></tr>
+                <tr><td><code>ca-app-pub-3940256099942544~1458002511</code></td><td>iOS app ID, <code>ios/Runner/Info.plist</code></td><td>your iOS AdMob app ID</td></tr>
+                <tr><td><code>ca-app-pub-3940256099942544/6300978111</code></td><td>Android banner unit, admin panel <strong>Ads</strong> page</td><td>your Android banner unit ID</td></tr>
+                <tr><td><code>ca-app-pub-3940256099942544/1033173712</code></td><td>Android interstitial unit, admin panel <strong>Ads</strong> page</td><td>your Android interstitial unit ID</td></tr>
+                <tr><td><code>ca-app-pub-3940256099942544/2934735716</code></td><td>iOS banner unit, admin panel <strong>Ads</strong> page</td><td>your iOS banner unit ID</td></tr>
+                <tr><td><code>ca-app-pub-3940256099942544/4411468910</code></td><td>iOS interstitial unit, admin panel <strong>Ads</strong> page</td><td>your iOS interstitial unit ID</td></tr>
+            </tbody>
+        </table>
+        <p>The four ad unit test IDs are written to the database the first time the backend starts (<code>Backend/src/modules/subscriptions/premium.defaults.ts</code>). After that, change them on the admin panel's Ads page; editing the defaults file later has no effect on an existing database.</p>
         <h3>App IDs (in the app)</h3>
         <table class="doc-table">
             <thead><tr><th>Platform</th><th>File</th><th>Key</th></tr></thead>
@@ -461,6 +640,30 @@ flutterfire configure --project=&lt;your-firebase-project-id&gt;</code></pre>
         <div class="alert-warning">
             <strong>Platform note:</strong> Premium is sold through <strong>Google Play Billing on Android</strong>. Apple In-App Purchase verification is not included in this version, so Premium cannot be bought on iOS; iOS listeners use the free tier. Premium can also be granted manually from the admin panel on any platform.
         </div>
+
+        <h3>iOS and App Store review</h3>
+        <p>Apple requires digital subscriptions sold inside an iOS app to use Apple In-App Purchase (App Review Guideline 3.1.1). Harmonia's backend verifies Google Play purchases only, so on iOS the app must not offer a way to buy Premium. Choose one approach before you submit to the App Store:</p>
+        <table class="doc-table">
+            <thead><tr><th>Approach</th><th>What to do</th></tr></thead>
+            <tbody>
+                <tr><td><strong>A. Free on iOS (recommended, no coding)</strong></td><td>
+                    <ul>
+                        <li>In the admin panel's <strong>Premium plans</strong> page, untick <code>ios</code> on every plan so only <code>android</code> is left. New plans have both ticked by default. The backend returns plans per platform (<code>GET /premium/config?platform=ios</code>), so iOS then gets none.</li>
+                        <li>Do not mark the songs a reviewer will try as Premium, or make sure the review account (below) has Premium.</li>
+                        <li>Hide the Premium tab and "Go Premium" buttons on iOS, for example with <code>if (Platform.isIOS)</code> around the Premium tab in <code>lib/feature/main/presentation/widgets/bottom_nav_widget.dart</code>.</li>
+                        <li>Never mention prices, "subscribe on our website" or "buy on Android" in the iOS app. Apple rejects that under 3.1.1 and 3.1.3.</li>
+                    </ul></td></tr>
+                <tr><td><strong>B. Give the reviewer Premium</strong></td><td>Create a review account, grant it Premium in the admin panel (<strong>App users</strong> &gt; open the user &gt; <strong>Grant days</strong>), and enter its email and password in App Store Connect &gt; App Review Information. Premium granted by you is not a purchase, so this is allowed when the iOS app has no purchase buttons (approach A).</td></tr>
+                <tr><td><strong>C. Add Apple In-App Purchase</strong></td><td>Developer work: create subscriptions in App Store Connect, add their IDs to the plans (the database already has <code>apple_product_id</code>), and add App Store receipt verification and App Store Server Notifications to the backend, next to the Google Play code in <code>Backend/src/modules/subscriptions/</code>. The app's purchase code already supports StoreKit through the <code>in_app_purchase</code> package.</td></tr>
+            </tbody>
+        </table>
+        <p>Suggested <strong>App Review notes</strong> for approach A and B:</p>
+<pre><code>Harmonia is free to use on iOS. The iOS app has no in-app purchases and no
+links or references to buying anything elsewhere. Some content is
+unlocked for accounts that an administrator grants access to; the demo
+account below has this access so you can review every feature.
+Demo account: review@your-domain.com / your-password</code></pre>
+        <p>If App Review still asks for a purchase mechanism, reply in Resolution Center: the iOS app does not sell digital content, access is granted by the service operator, and there are no purchase calls to action in the app. Then either remove the remaining Premium wording on iOS or implement approach C.</p>
 
         <h3>Step 1: Create the subscription in Play Console</h3>
         <ul class="step-list">
@@ -562,6 +765,7 @@ npm ci</code></pre>
                 <tr><td><code>CLOUDFLARE_R2_*</code></td><td>Media storage (step 6)</td></tr>
                 <tr><td><code>GOOGLE_PLAY_*</code></td><td>Premium verification (step 7)</td></tr>
                 <tr><td><code>MEDIA_URL_SIGNING_SECRET</code></td><td>Optional expiring audio links (step 8)</td></tr>
+                <tr><td><code>FCM_BROADCAST_TOPIC</code></td><td>Push topic for "Everyone" notifications, default <code>harmonia</code>. Must match <code>broadcastTopic</code> in the app (<a href="#social-sign-in">section 5</a>)</td></tr>
                 <tr><td><code>TRUST_PROXY</code></td><td><code>1</code> behind nginx or Cloudflare, so rate limits see real client IPs</td></tr>
             </tbody>
         </table>
@@ -709,8 +913,8 @@ pm2 start prod.config.js     # runs "next start" on port 3000</code></pre>
                 <tr><td>Search analytics</td><td>Top and zero-result searches, clicks; pin or hide trending searches</td></tr>
                 <tr><td>Home sections</td><td>Create, order and schedule Home sections: layout, content source (manual, new releases, trending, for you, recently played) and items</td></tr>
                 <tr><td>Banners</td><td>Home banner carousel linking to an album, playlist, artist, Premium or a URL</td></tr>
-                <tr><td>Songs</td><td>Upload audio and cover, lyrics, credits and licence, Premium flag, stream qualities (64/128/256 kbps), retry failed conversions, Excel bulk upload</td></tr>
-                <tr><td>Albums / Playlists / Artists</td><td>Create and edit with track pickers, Premium flags and Excel bulk upload</td></tr>
+                <tr><td>Songs</td><td>Upload audio and cover, lyrics, credits and licence, Premium flag, stream qualities (64/128/256 kbps), retry failed conversions, bulk upload from Excel (.xlsx) or CSV</td></tr>
+                <tr><td>Albums / Playlists / Artists</td><td>Create and edit with track pickers, Premium flags and bulk upload from Excel (.xlsx) or CSV</td></tr>
                 <tr><td>Moods &amp; genres</td><td>Categories shown on Explore and in onboarding</td></tr>
                 <tr><td>Shorts</td><td>Short music clips</td></tr>
                 <tr><td>App users</td><td>Search, view details, ban, grant or revoke Premium, erase a user</td></tr>
@@ -762,7 +966,7 @@ pm2 start prod.config.js     # runs "next start" on port 3000</code></pre>
 
         <h3>Errors</h3>
 <pre><code>// 400 validation error
-{ "statusCode": 400, "timestamp": "2026-10-16T10:00:00.000Z", "path": "/api/v1/songs/create",
+{ "statusCode": 400, "timestamp": "2026-01-15T10:00:00.000Z", "path": "/api/v1/songs/create",
   "message": ["thumbnail must be an https URL", "title should not be empty"], "error": "Bad Request" }
 
 // 404
@@ -867,31 +1071,40 @@ x-device-id: &lt;stable id per app install&gt;</code></pre>
         <p><code>title</code>, <code>thumbnail</code> and <code>file_path</code> are required; <code>thumbnail</code> and <code>file_path</code> must be https URLs. Upload files first with <code>POST /admin/uploads?kind=image|audio|video</code> (returns <code>{ url, key, kind, mime, size }</code>).</p>
 
         <h3>Endpoint groups</h3>
+        <p>Every path below is relative to <code>https://your-api/api/v1</code>. The full, always-current list with request bodies is in Swagger at <code>/api</code> when <code>NODE_ENV</code> is not production.</p>
         <p>Access: <strong>public</strong> (no token), <strong>optional</strong> (works for guests, richer when signed in), <strong>user</strong> (Firebase token), <strong>admin</strong> (any admin role), <strong>editor</strong> (editor or super admin), <strong>super</strong> (super admin).</p>
         <table class="doc-table">
-            <thead><tr><th>Group</th><th>Main endpoints</th><th>Access</th></tr></thead>
+            <thead><tr><th>Group</th><th>Method and path (prefix <code>/api/v1</code>)</th><th>Access</th></tr></thead>
             <tbody>
+                <tr><td>Health</td><td><code>GET /</code></td><td>public</td></tr>
                 <tr><td>Home</td><td><code>GET /home</code></td><td>optional</td></tr>
-                <tr><td>Songs</td><td><code>GET /songs/:id</code>, <code>GET /songs/:id/radio</code>, <code>GET /credits</code></td><td>optional / public</td></tr>
-                <tr><td>Songs (admin)</td><td><code>POST /songs/create</code>, <code>GET /songs/list</code>, <code>PATCH /songs/update/:id</code>, <code>DELETE /songs/:id</code>, <code>POST /songs/qualities</code>, <code>POST /songs/bulk-upload</code></td><td>admin / editor</td></tr>
-                <tr><td>Artists</td><td><code>GET /artists</code>, <code>GET /artists/:id</code>; create, edit, delete, bulk upload</td><td>public / optional; editor</td></tr>
-                <tr><td>Albums, catalogue playlists</td><td><code>/album</code>, <code>/playlist</code> (create, list, edit, delete, bulk upload)</td><td>admin / editor</td></tr>
-                <tr><td>Collections</td><td><code>GET /category/collections/:categoryId</code>, <code>GET /category/collections/album-playlist-by-id/:id</code>, <code>GET /collections/:id/related</code></td><td>optional</td></tr>
-                <tr><td>Categories</td><td><code>GET /category</code>, <code>GET /category/:id</code>; admin section management</td><td>public; admin / editor</td></tr>
-                <tr><td>Shorts</td><td><code>GET /shorts/get-all-with-includes</code>, <code>GET /shorts/:id</code>, <code>POST/DELETE /shorts/:id/like</code></td><td>optional / public / user</td></tr>
-                <tr><td>User playlists</td><td><code>/playlists/me</code>, <code>POST /playlists</code>, <code>PATCH/DELETE /playlists/:id</code>, add/remove/reorder songs</td><td>user</td></tr>
-                <tr><td>Library</td><td><code>/library/items</code>, <code>/library/liked-songs</code>, <code>/library/saved</code></td><td>user</td></tr>
-                <tr><td>Plays and history</td><td><code>POST /plays</code>, <code>POST /plays/batch</code>, <code>/me/continue-listening</code>, <code>/me/history</code></td><td>optional / user</td></tr>
-                <tr><td>Search</td><td><code>/search</code>, <code>/search/page</code>, <code>/search/suggest</code>, <code>/search/trending</code>, <code>POST /search/events</code></td><td>public / optional</td></tr>
-                <tr><td>Profile</td><td><code>GET/PATCH/DELETE /users/me</code>, <code>POST /users/me/photo</code></td><td>user</td></tr>
-                <tr><td>Taste</td><td><code>GET /onboarding/options</code>, <code>GET/PUT /me/preferences</code></td><td>public / user</td></tr>
-                <tr><td>Devices</td><td><code>POST/GET /me/devices</code>, <code>DELETE /me/devices/session/:id</code>, <code>DELETE /me/devices/:token</code></td><td>optional / user</td></tr>
-                <tr><td>Premium and ads</td><td><code>GET /premium/config</code>, <code>GET /ads/config</code>, <code>GET /me/entitlement</code>, <code>POST /purchases/google/verify</code>, <code>POST /purchases/google/rtdn</code></td><td>public / user / secret token</td></tr>
-                <tr><td>App config</td><td><code>GET /app/config?platform=android|ios</code></td><td>public</td></tr>
-                <tr><td>Admin: stats</td><td><code>/admin/stats/overview</code>, <code>/admin/stats/top-songs</code>, <code>/admin/stats/daily-plays</code>, <code>/admin/stats/search</code></td><td>admin</td></tr>
-                <tr><td>Admin: content</td><td><code>/admin/banners</code>, <code>/admin/uploads</code>, <code>/admin/notifications</code>, <code>/admin/search/trending</code></td><td>editor</td></tr>
-                <tr><td>Admin: business</td><td><code>/admin/premium/plans</code>, <code>/admin/premium/page-settings</code>, <code>/admin/ads/settings</code>, <code>/admin/app-config</code>, <code>/admin/subscriptions</code>, <code>/admin/app-users</code></td><td>admin read, editor write</td></tr>
-                <tr><td>Admin: staff</td><td><code>/admin/users</code>, <code>/admin/audit-logs</code>, grant/revoke Premium, erase app user</td><td>super</td></tr>
+                <tr><td>Songs</td><td><code>GET /songs/:id</code><br><code>GET /songs/:id/radio</code><br><code>GET /credits</code></td><td>optional / public</td></tr>
+                <tr><td>Songs (admin)</td><td><code>POST /songs/create</code><br><code>GET /songs/list</code><br><code>GET /songs/options</code><br><code>PATCH /songs/update/:id</code><br><code>DELETE /songs/:id</code><br><code>POST /songs/qualities</code><br><code>POST /songs/qualities/retry-failed</code><br><code>POST /songs/bulk-upload</code></td><td>admin read, editor write</td></tr>
+                <tr><td>Artists</td><td><code>GET /artists</code><br><code>GET /artists/:id</code><br><code>POST /artists</code><br><code>PATCH /artists/:id</code><br><code>DELETE /artists/:id</code><br><code>POST /artists/bulk-upload</code></td><td>public / optional; editor write</td></tr>
+                <tr><td>Albums</td><td><code>GET /album</code><br><code>GET /album/:id</code><br><code>GET /album/by-category/:categoryId</code><br><code>POST /album</code><br><code>PUT /album/:id</code><br><code>DELETE /album/:id</code><br><code>POST /album/bulk-upload</code></td><td>admin read, editor write</td></tr>
+                <tr><td>Catalogue playlists</td><td><code>GET /playlist</code><br><code>GET /playlist/:id</code><br><code>GET /playlist/by-category/:categoryId</code><br><code>POST /playlist</code><br><code>PUT /playlist/:id</code><br><code>DELETE /playlist/:id</code></td><td>admin read, editor write</td></tr>
+                <tr><td>Collections</td><td><code>GET /category/collections/:categoryId</code><br><code>GET /category/collections/album-playlist-by-id/:id</code><br><code>GET /collections/:id/related</code></td><td>optional</td></tr>
+                <tr><td>Categories (home sections, moods, genres)</td><td><code>GET /category</code><br><code>GET /category/:id</code><br><code>POST /category</code><br><code>PUT /category/:id</code><br><code>DELETE /category/:id</code><br><code>PUT /category/reorder</code><br><code>GET /category/admin/sections</code><br><code>GET /category/admin/:id/contents</code><br><code>PUT /category/admin/:id/contents</code></td><td>public read; admin / editor</td></tr>
+                <tr><td>Shorts</td><td><code>GET /shorts/get-all-with-includes</code><br><code>GET /shorts/get-all</code><br><code>GET /shorts/:id</code><br><code>POST /shorts/:id/like</code><br><code>DELETE /shorts/:id/like</code><br><code>POST /shorts/create</code><br><code>PUT /shorts/:id</code><br><code>DELETE /shorts/:id</code></td><td>optional / user; editor write</td></tr>
+                <tr><td>User playlists</td><td><code>GET /playlists/me</code><br><code>GET /playlists/containing</code><br><code>POST /playlists</code><br><code>GET /playlists/:id</code><br><code>PATCH /playlists/:id</code><br><code>DELETE /playlists/:id</code><br><code>POST /playlists/:id/songs</code><br><code>DELETE /playlists/:id/songs/:songId</code><br><code>PUT /playlists/:id/songs/order</code></td><td>user</td></tr>
+                <tr><td>Library</td><td><code>GET /library/items</code><br><code>GET /library/liked-songs</code><br><code>GET /library/liked-songs/stats</code><br><code>POST /library/liked-songs/:songId</code><br><code>DELETE /library/liked-songs/:songId</code><br><code>GET /library/saved/ids</code><br><code>POST /library/saved</code><br><code>DELETE /library/saved/:kind/:entityId</code></td><td>user</td></tr>
+                <tr><td>Plays and history</td><td><code>POST /plays</code><br><code>POST /plays/batch</code><br><code>GET /me/continue-listening</code><br><code>DELETE /me/continue-listening/:songId</code><br><code>GET /me/history</code><br><code>DELETE /me/history</code></td><td>optional / user</td></tr>
+                <tr><td>Search</td><td><code>GET /search</code><br><code>GET /search/page</code><br><code>GET /search/suggest</code><br><code>GET /search/trending</code><br><code>POST /search/events</code></td><td>public / optional</td></tr>
+                <tr><td>Profile</td><td><code>GET /users/me</code><br><code>PATCH /users/me</code><br><code>POST /users/me/photo</code><br><code>DELETE /users/me</code></td><td>user</td></tr>
+                <tr><td>Music taste</td><td><code>GET /onboarding/options</code><br><code>GET /me/preferences</code><br><code>PUT /me/preferences</code></td><td>public / user</td></tr>
+                <tr><td>Devices</td><td><code>POST /me/devices</code><br><code>GET /me/devices</code><br><code>DELETE /me/devices/session/:id</code><br><code>DELETE /me/devices/:token</code></td><td>optional / user</td></tr>
+                <tr><td>Premium and ads</td><td><code>GET /premium/config?platform=android|ios</code><br><code>GET /ads/config</code><br><code>GET /me/entitlement</code><br><code>POST /purchases/google/verify</code><br><code>POST /purchases/google/rtdn</code></td><td>public / user / RTDN secret token</td></tr>
+                <tr><td>App config</td><td><code>GET /app/config?platform=android|ios</code><br><code>GET /admin/app-config</code><br><code>PUT /admin/app-config</code></td><td>public; admin read, editor write</td></tr>
+                <tr><td>Admin: sign-in</td><td><code>POST /admin/auth/login</code><br><code>GET /admin/auth/me</code><br><code>POST /admin/auth/change-password</code></td><td>public / admin</td></tr>
+                <tr><td>Admin: stats</td><td><code>GET /admin/stats/overview</code><br><code>GET /admin/stats/top-songs</code><br><code>GET /admin/stats/daily-plays</code><br><code>GET /admin/stats/search</code></td><td>admin</td></tr>
+                <tr><td>Admin: banners</td><td><code>GET /admin/banners</code><br><code>POST /admin/banners</code><br><code>PATCH /admin/banners/:id</code><br><code>PUT /admin/banners/reorder</code><br><code>DELETE /admin/banners/:id</code></td><td>admin read, editor write</td></tr>
+                <tr><td>Admin: uploads</td><td><code>POST /admin/uploads?kind=image|audio|video</code></td><td>editor</td></tr>
+                <tr><td>Admin: push notifications</td><td><code>GET /admin/notifications</code><br><code>GET /admin/notifications/audience</code><br><code>GET /admin/notifications/:id</code><br><code>POST /admin/notifications</code><br><code>PATCH /admin/notifications/:id</code><br><code>POST /admin/notifications/test</code><br><code>POST /admin/notifications/:id/send</code><br><code>POST /admin/notifications/:id/cancel</code><br><code>POST /admin/notifications/:id/duplicate</code><br><code>DELETE /admin/notifications/:id</code></td><td>admin read, editor write</td></tr>
+                <tr><td>Admin: trending searches</td><td><code>GET /admin/search/trending</code><br><code>POST /admin/search/trending/overrides</code><br><code>DELETE /admin/search/trending/overrides/:id</code></td><td>admin read, editor write</td></tr>
+                <tr><td>Admin: Premium and ads</td><td><code>GET /admin/premium/plans</code><br><code>POST /admin/premium/plans</code><br><code>PATCH /admin/premium/plans/:id</code><br><code>DELETE /admin/premium/plans/:id</code><br><code>GET /admin/premium/page-settings</code><br><code>PUT /admin/premium/page-settings</code><br><code>GET /admin/ads/settings</code><br><code>PUT /admin/ads/settings</code></td><td>admin read, editor write</td></tr>
+                <tr><td>Admin: subscriptions</td><td><code>GET /admin/subscriptions</code><br><code>GET /admin/subscriptions/stats</code><br><code>GET /admin/subscriptions/export.csv</code></td><td>admin</td></tr>
+                <tr><td>Admin: app users</td><td><code>GET /admin/app-users</code><br><code>GET /admin/app-users/:id</code><br><code>PATCH /admin/app-users/:id/ban</code><br><code>POST /admin/app-users/:id/grant-premium</code><br><code>POST /admin/app-users/:id/revoke-premium</code><br><code>DELETE /admin/app-users/:id</code></td><td>admin read; super admin for Premium, ban and erase</td></tr>
+                <tr><td>Admin: staff and audit</td><td><code>GET /admin/users</code><br><code>POST /admin/users</code><br><code>PATCH /admin/users/:id</code><br><code>DELETE /admin/users/:id</code><br><code>GET /admin/audit-logs</code><br><code>GET /admin/audit-logs/actions</code></td><td>super admin</td></tr>
             </tbody>
         </table>
     </section>
@@ -967,7 +1180,7 @@ npm run migration:revert     # undo the last migration</code></pre>
 
         <h3>Backups</h3>
 <pre><code>pg_dump -Fc -d harmonia -f harmonia-$(date +%F).dump      # back up
-pg_restore -d harmonia --clean harmonia-2026-10-16.dump      # restore</code></pre>
+pg_restore -d harmonia --clean harmonia-2026-01-15.dump      # restore</code></pre>
         <p>Schedule a daily backup (for example with cron) and keep copies off the server. Media files are in R2, so back up the bucket separately if needed.</p>
     </section>
 
@@ -1029,9 +1242,67 @@ pg_restore -d harmonia --clean harmonia-2026-10-16.dump      # restore</code></p
     <!-- ===================================================== -->
     <section id="changelog">
         <h2>19. Changelog</h2>
-        <h3>Version 1.0.0 &ndash; 16 Oct 2026</h3>
+        <h3>Version 1.0.0 (Initial Release)</h3>
         <ul>
             <li>Initial release: Flutter app (Android and iOS), NestJS backend and Next.js admin panel.</li>
+        </ul>
+    </section>
+
+    <!-- ===================================================== -->
+    <section id="upgrading">
+        <h2>20. Upgrading to a New Version</h2>
+        <p>When a new version of Harmonia is released, download it from your CodeCanyon <strong>Downloads</strong> page and read its <a href="#changelog">changelog</a> first. Your songs, users, playlists, subscriptions and settings live in your PostgreSQL database and your R2 bucket, not in the code, so updating the code does <strong>not</strong> delete them.</p>
+
+        <h3>Before you start</h3>
+        <ul class="step-list">
+            <li><strong>Back up the database</strong> (see <a href="#database-schema">section 16, Backups</a>):
+<pre><code>pg_dump -Fc -d harmonia -f harmonia-before-upgrade.dump</code></pre></li>
+            <li>Keep your own changes in Git, or note which files you edited, so you can carry them over.</li>
+            <li>Never overwrite these files with the ones from the new package; they hold your settings:
+                <table class="doc-table">
+                    <thead><tr><th>Project</th><th>Keep your copy of</th></tr></thead>
+                    <tbody>
+                        <tr><td>Backend</td><td><code>.env</code></td></tr>
+                        <tr><td>Admin panel</td><td><code>.env.local</code> (or <code>.env</code>)</td></tr>
+                        <tr><td>Flutter app</td><td><code>lib/firebase_options.dart</code>, <code>android/app/google-services.json</code>, <code>ios/Runner/GoogleService-Info.plist</code>, <code>android/key.properties</code> and your keystore, <code>lib/core/network/constants/api_endpoint.dart</code>, app icons, <code>strings.xml</code>, <code>Info.plist</code> changes, AdMob app IDs</td></tr>
+                    </tbody>
+                </table>
+            </li>
+            <li>Compare the new <code>.env.example</code> with your <code>.env</code> and add any new variables.</li>
+        </ul>
+
+        <h3>1. Backend</h3>
+<pre><code>cd Backend
+# copy the new files over your old folder, keeping your .env
+npm ci
+npm run build
+pm2 restart harmonia-api</code></pre>
+        <ul class="step-list">
+            <li><strong>Database changes are applied automatically.</strong> In production (<code>NODE_ENV=production</code>) the server runs every new migration in <code>db/migrations/</code> when it starts. Each migration runs once; TypeORM records it in the <code>migrations</code> table.</li>
+            <li>Migrations only add or change tables and columns. They keep your existing rows. If a release ever needs to change existing data, its changelog says so.</li>
+            <li>Check what ran: <code>npm run migration:show</code> (applied ones are marked <code>[X]</code>). Run pending ones by hand with <code>npm run migration:run</code>.</li>
+            <li>If something goes wrong: <code>npm run migration:revert</code> undoes the last migration, or restore the backup with <code>pg_restore -d harmonia --clean harmonia-before-upgrade.dump</code>, then go back to the old code.</li>
+            <li>Development databases (<code>NODE_ENV=development</code>) update their tables from the code automatically and need no migration step.</li>
+        </ul>
+
+        <h3>2. Admin panel</h3>
+<pre><code>cd Admin-Panel
+# copy the new files over your old folder, keeping .env.local
+npm ci
+npm run build
+pm2 restart harmonia-admin</code></pre>
+        <p>The admin panel stores nothing itself; all data comes from the backend. Upgrade the backend first.</p>
+
+        <h3>3. Flutter app</h3>
+        <ul class="step-list">
+            <li>Copy the new <code>lib/</code>, <code>pubspec.yaml</code> and <code>assets/</code> over your project, then restore the files you customised (list above). If you use Git, commit first and review the diff.</li>
+            <li>Run:
+<pre><code>flutter clean
+flutter pub get
+cd ios &amp;&amp; pod install &amp;&amp; cd ..
+flutter run</code></pre></li>
+            <li>Raise <code>version:</code> in <code>pubspec.yaml</code> (for example <code>1.0.1+2</code>) and publish the update as in <a href="#build-and-release">section 12</a>. Listeners keep their downloads, likes and playlists because these are stored on the server and on their phone.</li>
+            <li>Old app versions keep working with the new backend unless the changelog says otherwise. To make everyone update, raise the minimum version on the admin panel's <strong>App config</strong> page.</li>
         </ul>
     </section>
 

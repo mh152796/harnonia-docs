@@ -193,3 +193,19 @@ kbd {
 .toc li { margin-bottom: 4px; break-inside: avoid; }
 .alert-warning { background-color: #fff8e1; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0; }
 @media (max-width: 640px) { .toc ol { columns: 1; } }
+
+/* Architecture diagram */
+.arch-diagram {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  overflow-x: auto;
+}
+.arch-diagram svg {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+}
