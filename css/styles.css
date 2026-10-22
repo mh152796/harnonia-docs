@@ -209,3 +209,45 @@ kbd {
   min-width: 640px;
   height: auto;
 }
+
+/* Screenshots with captions */
+.doc-shot {
+  margin: 18px 0 26px;
+}
+.doc-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.doc-shot figcaption {
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: var(--text-light);
+}
+.terminal {
+  background: #0f1420;
+  color: #d8dee9;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.82em;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+}
+.terminal .t-ok { color: #7ee2a0; font-weight: bold; }
+.terminal .t-warn { color: #f5d06f; }
+.terminal .t-err { color: #ff8a80; }
+.terminal .t-dim { color: #8b93a7; }
+.terminal .t-note { color: #ffffff; background: #13a34a; border-radius: 3px; padding: 0 5px; font-weight: bold; }
+h4 { color: #111; margin-top: 24px; }
+.terminal .t-note { margin-right: 4px; }
+ol.annot { padding-left: 22px; }
+ol.annot li { margin-bottom: 6px; }
+ol.annot li::marker { color: #fff; font-weight: bold; }
+ol.annot { counter-reset: n; list-style: none; }
+ol.annot li { counter-increment: n; position: relative; }
+ol.annot li::before { content: counter(n); position: absolute; left: -24px; top: 2px; background: #13a34a; color: #fff; font-size: 0.75em; font-weight: bold; border-radius: 3px; padding: 0 5px; }

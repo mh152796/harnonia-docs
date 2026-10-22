@@ -126,11 +126,23 @@
             <strong>Buyers are responsible for all fees charged by third-party services.</strong> This includes hosting, developer accounts, app store commissions, storage and any usage beyond a provider's free tier. The item price covers the source code and documentation only. Prices change; check each provider's current rates.
         </div>
 
+        <div class="alert">
+            <strong>Accounts you must create yourself.</strong> Harmonia ships no credentials of ours. Before the app works you need:
+            <ul class="step-list" style="margin-top:8px;">
+                <li><strong>Your own Firebase project</strong> (used by <code>firebase_core</code>, <code>firebase_auth</code> and <code>firebase_messaging</code> in the app, and <code>firebase-admin</code> in the backend). You create and maintain it, accept Google's <a href="https://firebase.google.com/terms" target="_blank">Firebase Terms of Service</a>, and pay any usage beyond the free tier. Setup: <a href="#firebase-setup">section 4</a>.</li>
+                <li><strong>Your own Google Cloud service account</strong> for the Google Play Developer API (the backend's <code>googleapis</code> package), so the backend can verify Premium purchases. You accept the <a href="https://developers.google.com/terms" target="_blank">Google APIs Terms of Service</a>. Setup: <a href="#backend-google-play">section 13, step 7</a>.</li>
+                <li><strong>Your own Facebook App ID</strong> if you keep Facebook sign-in (<code>flutter_facebook_auth</code>, which uses Meta's Facebook SDK / FBSDKLoginKit). Meta's Platform Terms require every app to register its own App ID. Setup: <a href="#social-sign-in">section 5</a>.</li>
+                <li><strong>Your own AdMob account</strong> if you show ads; the package contains only Google's test IDs (<a href="#admob">section 10</a>).</li>
+                <li><strong>FFmpeg on your server</strong> (free, installed with your server's package manager). It is not bundled; see <a href="#backend-setup">section 13</a>.</li>
+            </ul>
+        </div>
+
         <table class="doc-table">
             <thead><tr><th>Service</th><th>Required?</th><th>Used for</th><th>Who bills you</th></tr></thead>
             <tbody>
                 <tr><td>VPS or cloud server</td><td>Required</td><td>Runs the backend (Node.js 20+, PostgreSQL 14+) and the admin panel</td><td>Your hosting provider</td></tr>
-                <tr><td>Firebase</td><td>Required</td><td>App sign-in (Authentication) and push notifications (Cloud Messaging). The free Spark plan covers typical use</td><td>Google, beyond the free tier</td></tr>
+                <tr><td>Firebase (your own project)</td><td>Required</td><td>App sign-in (Authentication) and push notifications (Cloud Messaging). The free Spark plan covers typical use. Subject to Google's Firebase terms</td><td>Google, beyond the free tier</td></tr>
+                <tr><td>Google Play Developer API (your own service account)</td><td>Required for Premium</td><td>The backend checks every Google Play purchase with Google</td><td>Free API; Google Cloud project needed</td></tr>
                 <tr><td>Cloudflare R2</td><td>Required</td><td>Stores audio, covers and images uploaded from the admin panel</td><td>Cloudflare, beyond the free tier</td></tr>
                 <tr><td>Google Play Developer account</td><td>Required for Android</td><td>Publishing the app; USD 25 one-time</td><td>Google</td></tr>
                 <tr><td>Apple Developer Program</td><td>Required for iOS</td><td>Publishing the app and Sign in with Apple; USD 99 per year</td><td>Apple</td></tr>
@@ -138,7 +150,7 @@
                 <tr><td>Google Cloud Pub/Sub</td><td>Optional</td><td>Real-time notifications about renewals and refunds from Google Play</td><td>Google, beyond the free tier</td></tr>
                 <tr><td>Apple In-App Purchase, Stripe, PayPal, other gateways</td><td>Not included</td><td>No checkout integration ships for these. Premium cannot be bought on iOS in this version</td><td>&mdash;</td></tr>
                 <tr><td>Google AdMob</td><td>Optional</td><td>Banner and interstitial ads for free listeners</td><td>Free; you earn revenue</td></tr>
-                <tr><td>Meta for Developers</td><td>Optional</td><td>Facebook sign-in</td><td>Free</td></tr>
+                <tr><td>Meta for Developers (your own Facebook App ID)</td><td>Optional</td><td>Facebook sign-in</td><td>Free</td></tr>
                 <tr><td>Cloudflare Workers</td><td>Optional</td><td>Expiring audio links (the included worker script)</td><td>Cloudflare, beyond the free tier</td></tr>
                 <tr><td>Music licensing</td><td>Required for real content</td><td>You must own or license every track you publish. No music is included in the package</td><td>Rights holders / licensing bodies</td></tr>
             </tbody>
@@ -256,8 +268,21 @@
             <div class="prereq-card"><strong>CocoaPods</strong>Latest (1.16 or newer)</div>
             <div class="prereq-card"><strong>Node.js</strong>20 LTS or newer</div>
             <div class="prereq-card"><strong>PostgreSQL</strong>14 or newer</div>
+            <div class="prereq-card"><strong>FFmpeg</strong>Any recent version<br>(on the server)</div>
             <div class="prereq-card"><strong>IDE</strong>Android Studio / VS Code</div>
         </div>
+
+        <h3>Server size</h3>
+        <p>The backend, PostgreSQL and the admin panel can run together on one Linux server (Ubuntu 22.04 or 24.04 LTS recommended). Audio and images are stored in Cloudflare R2, not on the server, so the disk only needs room for the code, the database and temporary files during uploads.</p>
+        <table class="doc-table">
+            <thead><tr><th></th><th>CPU</th><th>RAM</th><th>Disk</th><th>Good for</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Minimum</strong></td><td>1 vCPU</td><td>2 GB (plus 2 GB swap)</td><td>20 GB SSD</td><td>Testing and a small catalogue; uploads convert slowly</td></tr>
+                <tr><td><strong>Recommended</strong></td><td>2 vCPU</td><td>4 GB</td><td>40 GB SSD</td><td>Launch, thousands of listeners, regular uploads</td></tr>
+                <tr><td><strong>Growing</strong></td><td>4 vCPU or more</td><td>8 GB or more</td><td>80 GB SSD</td><td>Large catalogue and many daily listeners; consider a managed PostgreSQL</td></tr>
+            </tbody>
+        </table>
+        <p>CPU matters most when you upload songs, because FFmpeg converts each one into three stream qualities. Building the admin panel (<code>npm run build</code>) needs about 1.5 GB of free RAM; on a 2 GB server add swap first. A shared hosting plan (cPanel without SSH and Node.js) is <strong>not</strong> enough; you need a VPS or cloud server with SSH access.</p>
 
         <div class="alert">
             <strong>Java version:</strong> Gradle 8.14, used by this project, runs on JDK 17 to 24. Newer JDKs fail with "Unsupported class file major version". If <code>java -version</code> shows something newer, point Flutter at Android Studio's JDK: <code>flutter config --jdk-dir "&lt;Android Studio&gt;/jbr"</code>.
@@ -744,7 +769,12 @@ flutter build appbundle --release    # App Bundle for Google Play</code></pre>
         <h3>Step 1: Install</h3>
 <pre><code>cd Backend
 npm ci</code></pre>
-        <p>ffmpeg (used to create stream qualities and measure loudness) comes with the <code>ffmpeg-static</code> package &mdash; nothing to install.</p>
+        <h3>Install FFmpeg on the server</h3>
+        <p>FFmpeg creates the low, normal and high stream qualities and measures loudness. It is <strong>not bundled</strong> with the package; install it with your system's package manager (free):</p>
+<pre><code>sudo apt update &amp;&amp; sudo apt install -y ffmpeg     # Ubuntu / Debian
+brew install ffmpeg                                # macOS (local testing)
+ffmpeg -version                                    # check it works</code></pre>
+        <p>The backend finds <code>ffmpeg</code> on the system PATH. If it is installed somewhere else, set its full path in <code>.env</code>: <code>FFMPEG_PATH=/usr/local/bin/ffmpeg</code>. Without FFmpeg the backend still runs and plays the original uploaded files; it just skips the extra stream qualities and loudness analysis and logs a warning.</p>
 
         <h3>Step 2: Create the database</h3>
 <pre><code>createdb harmonia        # or create it in pgAdmin / your host's panel</code></pre>
@@ -765,11 +795,15 @@ npm ci</code></pre>
                 <tr><td><code>CLOUDFLARE_R2_*</code></td><td>Media storage (step 6)</td></tr>
                 <tr><td><code>GOOGLE_PLAY_*</code></td><td>Premium verification (step 7)</td></tr>
                 <tr><td><code>MEDIA_URL_SIGNING_SECRET</code></td><td>Optional expiring audio links (step 8)</td></tr>
-                <tr><td><code>FCM_BROADCAST_TOPIC</code></td><td>Push topic for "Everyone" notifications, default <code>harmonia</code>. Must match <code>broadcastTopic</code> in the app (<a href="#social-sign-in">section 5</a>)</td></tr>
+                <tr><td><code>FCM_BROADCAST_TOPIC</code></td><td>Push topic for "Everyone" notifications, default <code>harmonia</code>.<br><strong>Must be exactly the same as <code>broadcastTopic</code> in the Flutter app</strong> (<code>Flutter-App/lib/core/service/push_notification/push_notification_service.dart</code>). If the two differ, "Everyone" notifications are sent but no phone receives them. See <a href="#social-sign-in">section 5</a>.</td></tr>
                 <tr><td><code>TRUST_PROXY</code></td><td><code>1</code> behind nginx or Cloudflare, so rate limits see real client IPs</td></tr>
             </tbody>
         </table>
         <p>To encode the Firebase JSON as base64 on macOS/Linux: <code>base64 -i service-account.json | tr -d '\n'</code></p>
+
+        <div class="alert">
+            <strong>Push notifications depend on two matching values.</strong> <code>FCM_BROADCAST_TOPIC</code> in this <code>.env</code> and <code>broadcastTopic</code> in the Flutter app must be the same text. Both default to <code>harmonia</code>; if you change one, change the other and rebuild the app.
+        </div>
 
         <div class="alert-warning">
             <strong>Production safety check.</strong> With <code>NODE_ENV=production</code> the server <strong>refuses to start</strong> while unsafe values remain, and tells you which variable to change: a short or example <code>JWT_SECRET</code>, <code>ALLOW_DEV_USER_HEADER=true</code>, a default <code>ADMIN_PASSWORD</code>, an <code>ADMIN_EMAIL</code> at your-domain.com, a missing Firebase service account, an empty <code>CORS_ORIGINS</code>, or a missing <code>GOOGLE_PLAY_RTDN_TOKEN</code> when Google Play is configured.
@@ -777,6 +811,63 @@ npm ci</code></pre>
 
         <h3>Step 4: First run and your admin account</h3>
 <pre><code>npm run start:dev        # development, with auto-reload; API at http://localhost:7001/api/v1</code></pre>
+
+        <h4>What a successful first run looks like</h4>
+        <p>This is the real output of <code>npm run start:dev</code> on an empty database, with only the database, <code>JWT_SECRET</code> and admin account set in <code>.env</code> (Firebase, R2 and Google Play not configured yet). About 200 lines that list modules and routes are shortened in the middle.</p>
+        <div class="terminal">
+&gt; harmonia-api@1.0.0 start:dev
+&gt; nest start --watch
+
+[9:39:48 AM] Starting compilation in watch mode...
+
+<span class="t-note">1</span> <span class="t-ok">[9:39:54 AM] Found 0 errors. Watching for file changes.</span>
+
+<span class="t-note">8</span> <span class="t-dim">(node:5374) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.</span>
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [NestFactory] Starting Nest application...
+<span class="t-note">2</span> <span class="t-warn">[Nest] 5428  - 10/22/2026, 9:39:56 AM    WARN [FirebaseAdmin] FIREBASE_SERVICE_ACCOUNT_JSON not set — bearer tokens cannot be verified. Set ALLOW_DEV_USER_HEADER=true to use x-user-id in development.</span>
+<span class="t-note">3</span> <span class="t-err">[Nest] 5428  - 10/22/2026, 9:39:56 AM   ERROR [UploadsService] R2 not configured: set CLOUDFLARE_R2_ENDPOINT, _ACCESS_KEY_ID, _SECRET_ACCESS_KEY, _BUCKET, _PUBLIC_URL. Uploads will fail.</span>
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] TypeOrmModule dependencies initialized +2ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] ConfigHostModule dependencies initialized +0ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] ThrottlerModule dependencies initialized +0ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] JwtModule dependencies initialized +0ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] DiscoveryModule dependencies initialized +0ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] ConfigModule dependencies initialized +0ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] ScheduleModule dependencies initialized +0ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] AppModule dependencies initialized +15ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] TypeOrmCoreModule dependencies initialized +94ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+[... lines 25-240 omitted: 216 more &quot;InstanceLoader ... dependencies initialized&quot; / &quot;RouterExplorer Mapped ...&quot; lines ...]
+<span class="t-note">4</span> <span class="t-ok">[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [AdminAuthService] Seeded super admin admin@example.com</span>
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [SubscriptionsService] Created default premium_page_settings
+<span class="t-note">5</span> <span class="t-ok">[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [SubscriptionsService] Created default ads_settings (AdMob test unit ids)</span>
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [SubscriptionsService] Seeded 4 subscription plans
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [AppConfigService] Created default app_config
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [SearchService] Search: pg_trgm enabled (ranked, typo-tolerant)
+<span class="t-note">6</span> <span class="t-warn">[Nest] 5428  - 10/22/2026, 9:39:56 AM    WARN [FFmpeg] FFmpeg not found. Install it (e.g. `sudo apt install ffmpeg`) or set FFMPEG_PATH. Stream quality versions and loudness analysis are disabled until then.</span>
+[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [NestApplication] Nest application successfully started +5ms
+<span class="t-note">7</span> <span class="t-ok">[Nest] 5428  - 10/22/2026, 9:39:56 AM     LOG [Bootstrap] 🚀 Server running on http://localhost:7001</span></div>
+        <ol class="annot">
+            <li><strong>Found 0 errors</strong>: the TypeScript code compiled.</li>
+            <li><strong>WARN FirebaseAdmin</strong>: normal until you add <code>FIREBASE_SERVICE_ACCOUNT_JSON</code> (section 4, step 4). App sign-in is not verified until then.</li>
+            <li><strong>ERROR UploadsService "R2 not configured"</strong>: shown in red but <strong>not fatal</strong>. The server keeps running; only file uploads fail until you complete step 6.</li>
+            <li><strong>Seeded super admin</strong>: your <code>ADMIN_EMAIL</code> account was created. Sign in to the admin panel with it.</li>
+            <li><strong>Created default &hellip;</strong>: default settings, Google's test ad IDs, sample Premium plans (development only) and app config were written to the database.</li>
+            <li><strong>WARN FFmpeg</strong>: appears only if FFmpeg is not installed (see step 1).</li>
+            <li><strong>Server running on http://localhost:7001</strong>: success. The API is ready.</li>
+            <li>The grey <code>DeprecationWarning</code> comes from the Nest CLI's file watcher, not from Harmonia, and can be ignored.</li>
+        </ol>
+        <p>If the output stops with a red error before line 7, compare it with the <a href="#backend-troubleshooting">troubleshooting list</a> below. The most common causes are a wrong database password or port, and a database that does not exist yet.</p>
+
+        <h4>Check it in the browser or terminal</h4>
+<pre><code>$ curl -s &quot;http://localhost:7001/api/v1/app/config?platform=android&quot;
+{&quot;data&quot;:{&quot;min_version&quot;:&quot;1.0.0&quot;,&quot;latest_version&quot;:&quot;1.0.0&quot;,&quot;store_url&quot;:null,&quot;force_update_message&quot;:&quot;Please update to the latest version to keep listening.&quot;,&quot;maintenance_mode&quot;:false,&quot;maintenance_message&quot;:&quot;We are doing some maintenance. Back shortly.&quot;,&quot;privacy_url&quot;:null,&quot;terms_url&quot;:null,&quot;support_email&quot;:null},&quot;isArray&quot;:false,&quot;path&quot;:&quot;/api/v1/app/config&quot;,&quot;duration&quot;:&quot;5ms&quot;,&quot;method&quot;:&quot;GET&quot;}</code></pre>
+        <p>A JSON reply like this (wrapped in <code>data</code>) means the API, the database and the default settings all work. In development, open <code>http://localhost:7001/api</code> in your browser to see the interactive Swagger API docs:</p>
+        <figure class="doc-shot">
+            <img src="assets/first-run-swagger.jpg" alt="Swagger UI at /api showing Harmonia API 1.0" loading="lazy">
+            <figcaption>Swagger at <code>http://localhost:7001/api</code> after a successful first run (development only; it is switched off in production).</figcaption>
+        </figure>
         <ul class="step-list">
             <li>In development the tables are created automatically from the code. In production the server runs the database migrations in <code>db/migrations/</code> on every start.</li>
             <li>When the <code>admin_users</code> table is empty, the server creates a <strong>super admin</strong> from <code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code>. Use these to sign in to the admin panel.</li>
@@ -842,13 +933,16 @@ pm2 save &amp;&amp; pm2 startup        # restart automatically after a reboot</c
         </ul>
         <p>Images and videos stay public; protected audio needs a valid signature, which the backend adds automatically.</p>
 
-        <h3>Troubleshooting</h3>
+        <h3 id="backend-troubleshooting">Troubleshooting</h3>
         <table class="doc-table">
             <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
             <tbody>
                 <tr><td>Server stops at start with a configuration error</td><td>Read the message; it names the variable to change (see the production safety check above).</td></tr>
                 <tr><td><code>ECONNREFUSED</code> or "password authentication failed"</td><td>Check <code>DB_*</code> values and that PostgreSQL is running and accepts connections.</td></tr>
                 <tr><td>"Server cannot verify tokens: FIREBASE_SERVICE_ACCOUNT_JSON is not configured"</td><td>Set the Firebase service account (step 3). It must belong to the same Firebase project as the app.</td></tr>
+                <tr><td>"database &hellip; does not exist"</td><td>Create it first (step 2), and check <code>DB_NAME</code>.</td></tr>
+                <tr><td>Configuration error about <code>DB_PASS</code> on a local PostgreSQL without a password</td><td><code>DB_PASS</code> may not be empty. Set any placeholder text; PostgreSQL ignores it when it trusts local connections.</td></tr>
+                <tr><td>"FFmpeg not found" warning</td><td>Install FFmpeg (step 1) or set <code>FFMPEG_PATH</code>, then restart.</td></tr>
                 <tr><td>Port 7001 already in use</td><td>Change <code>PORT</code> in <code>.env</code> and in your nginx <code>proxy_pass</code>.</td></tr>
                 <tr><td>Uploads fail with 413</td><td>Raise <code>client_max_body_size</code> in nginx.</td></tr>
                 <tr><td>Uploads fail with 503</td><td>R2 variables are missing or wrong (step 6).</td></tr>
@@ -875,7 +969,36 @@ NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api/v1     # production</code></p
 
         <h3>Step 2: Run</h3>
 <pre><code>npm run dev        # http://localhost:3000</code></pre>
-        <p>Sign in with the super admin from the backend's <code>ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD</code>.</p>
+        <p>Start the backend first. A successful start looks like this (real output):</p>
+        <div class="terminal">
+&gt; harmonia-admin@1.0.0 dev
+&gt; next dev --turbopack
+
+   ▲ Next.js 15.5.27 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://&lt;your-computer-ip&gt;:3000
+<span class="t-note">3</span> <span class="t-ok">   - Environments: .env.local</span>
+
+ ✓ Starting...
+ ✓ Compiled middleware in 65ms
+<span class="t-note">1</span> <span class="t-ok"> ✓ Ready in 644ms</span>
+ ○ Compiling /login ...
+ ✓ Compiled /login in 2.3s
+<span class="t-note">2</span> <span class="t-ok"> GET /login 200 in 2517ms</span>
+ GET /login 200 in 44ms
+ ✓ Compiled /favicon.ico in 126ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 361ms</div>
+        <ol class="annot">
+            <li><strong>Ready</strong>: the admin panel is running at <code>http://localhost:3000</code>.</li>
+            <li><strong>GET /login 200</strong>: your browser opened the sign-in page.</li>
+            <li><strong>Environments: .env.local</strong>: your settings file was found. If this line is missing, the panel calls the default <code>http://localhost:7001/api/v1</code>.</li>
+        </ol>
+        <p>Open <code>http://localhost:3000</code>. You should see the sign-in page:</p>
+        <figure class="doc-shot">
+            <img src="assets/first-run-admin-login.jpg" alt="Harmonia admin sign-in page" loading="lazy">
+            <figcaption>The admin sign-in page. Sign in with the backend's <code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code>.</figcaption>
+        </figure>
+        <p>After signing in you land on the Dashboard (see the <a href="#admin-panel-tour">admin panel tour</a> below). On a new installation the numbers are 0 until you add songs. If sign-in fails with a network or CORS error, check that the backend is running and that <code>CORS_ORIGINS</code> in the backend's <code>.env</code> contains <code>http://localhost:3000</code>.</p>
 
         <h3>Step 3: Go live</h3>
 <pre><code>npm ci
@@ -926,6 +1049,69 @@ pm2 start prod.config.js     # runs "next start" on port 3000</code></pre>
                 <tr><td>Admin users / Audit log</td><td>Staff accounts and a log of every change (super admin only)</td></tr>
             </tbody>
         </table>
+
+        <h3 id="admin-panel-tour">Admin panel tour</h3>
+        <p>What each main page looks like, so you know your way around before you add content. Screenshots are from the demo with sample music.</p>
+        <figure class="doc-shot">
+            <img src="assets/admin-dashboard.jpg" alt="Dashboard: listeners, plays, catalogue totals, plays per day and top songs" loading="lazy">
+            <figcaption>Dashboard: listeners, plays, catalogue totals, plays per day and top songs</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-home-sections.jpg" alt="Home sections: the rows of the app's Home screen, top to bottom. Turn them on or off, reorder, schedule and edit contents" loading="lazy">
+            <figcaption>Home sections: the rows of the app's Home screen, top to bottom. Turn them on or off, reorder, schedule and edit contents</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-banners.jpg" alt="Banners: the carousel at the top of Home" loading="lazy">
+            <figcaption>Banners: the carousel at the top of Home</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-songs.jpg" alt="Songs: catalogue list with access, tags and stream quality status. "+ New song" opens the upload form; "Bulk upload" imports a spreadsheet" loading="lazy">
+            <figcaption>Songs: catalogue list with access, tags and stream quality status. "+ New song" opens the upload form; "Bulk upload" imports a spreadsheet</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-song-form.jpg" alt="New song form: cover and audio file, artist, tags, Premium flag, stream qualities, credit, licence and synced lyrics" loading="lazy">
+            <figcaption>New song form: cover and audio file, artist, tags, Premium flag, stream qualities, credit, licence and synced lyrics</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-albums.jpg" alt="Albums: track list, the Home sections each album appears in, and Free or Premium access" loading="lazy">
+            <figcaption>Albums: track list, the Home sections each album appears in, and Free or Premium access</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-artists.jpg" alt="Artists: name, bio, photo, songs and albums" loading="lazy">
+            <figcaption>Artists: name, bio, photo, songs and albums</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-playlists.jpg" alt="Playlists: catalogue playlists shown in the app" loading="lazy">
+            <figcaption>Playlists: catalogue playlists shown in the app</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-moods-genres.jpg" alt="Moods and genres: shown on Explore and in the music-taste picker" loading="lazy">
+            <figcaption>Moods and genres: shown on Explore and in the music-taste picker</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-shorts.jpg" alt="Shorts: short clips linked to a song, album or playlist" loading="lazy">
+            <figcaption>Shorts: short clips linked to a song, album or playlist</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-premium-plans.jpg" alt="Premium plans: each plan's Google Play product, base plan and offer IDs, features and badge" loading="lazy">
+            <figcaption>Premium plans: each plan's Google Play product, base plan and offer IDs, features and badge</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-subscriptions.jpg" alt="Subscriptions: subscribers, estimated monthly revenue and every purchase record (user details blurred)" loading="lazy">
+            <figcaption>Subscriptions: subscribers, estimated monthly revenue and every purchase record (user details blurred)</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-ads.jpg" alt="Ads: AdMob unit IDs per platform and interstitial frequency. The yellow notice warns while Google test IDs are still in use" loading="lazy">
+            <figcaption>Ads: AdMob unit IDs per platform and interstitial frequency. The yellow notice warns while Google test IDs are still in use</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-push-notifications.jpg" alt="Push notifications: device counts, history and status of every campaign" loading="lazy">
+            <figcaption>Push notifications: device counts, history and status of every campaign</figcaption>
+        </figure>
+        <figure class="doc-shot">
+            <img src="assets/admin-push-composer.jpg" alt="Notification composer: title, message, picture, audience, tap action, schedule and live preview" loading="lazy">
+            <figcaption>Notification composer: title, message, picture, audience, tap action, schedule and live preview</figcaption>
+        </figure>
 
         <h3>Troubleshooting</h3>
         <table class="doc-table">
@@ -1236,7 +1422,37 @@ pg_restore -d harmonia --clean harmonia-2026-01-15.dump      # restore</code></p
     <section id="support">
         <h2>18. Support</h2>
         <p>Questions before or after purchase? Please use the <strong>Support</strong> tab on the CodeCanyon item page. All support is handled through the official Envato item support system.</p>
-        <p>When you ask for help, include the section you are on, the exact error message, and the output of <code>flutter doctor</code> (for app issues) or the server log (for backend issues).</p>
+        <p>We answer through the item's Support tab. Support covers bugs and questions about the included features; customisation and installation on your server are not part of item support.</p>
+
+        <h3>Before you open a ticket</h3>
+        <ul class="step-list">
+            <li>Check the <a href="#faq">FAQ and common build errors</a> and the Troubleshooting lists in sections 13 and 14.</li>
+            <li>Make sure you are on the latest version (see the <a href="#changelog">changelog</a>).</li>
+        </ul>
+
+        <h3>What to include</h3>
+        <p>A complete first message lets us answer in one reply instead of several:</p>
+        <table class="doc-table">
+            <thead><tr><th>Information</th><th>How to get it</th></tr></thead>
+            <tbody>
+                <tr><td>Your purchase code</td><td>CodeCanyon &gt; Downloads &gt; Harmonia &gt; License certificate and purchase code</td></tr>
+                <tr><td>Which part</td><td>Flutter app, backend or admin panel, and the documentation section you were following</td></tr>
+                <tr><td>Platform and versions</td><td>Android or iOS and the device or emulator; your computer's OS; for the app the output of <code>flutter doctor -v</code>; for the server the output of <code>node -v</code> and <code>psql --version</code> and the server's OS</td></tr>
+                <tr><td>The exact error message</td><td>Copy and paste the text, not a summary. A screenshot of the full screen or terminal helps too</td></tr>
+                <tr><td>Log output</td><td>App: the red error lines from <code>flutter run</code>. Backend: <code>pm2 logs harmonia-api --lines 100</code>. Admin panel: <code>pm2 logs harmonia-admin --lines 100</code> and the browser console (F12 &gt; Console)</td></tr>
+                <tr><td>Steps to reproduce</td><td>What you did, what you expected, and what happened instead</td></tr>
+            </tbody>
+        </table>
+        <div class="alert-warning">
+            <strong>Never send secrets.</strong> Remove passwords, <code>JWT_SECRET</code>, service-account JSON, API keys and keystore passwords from anything you paste. We will never ask for them.
+        </div>
+
+        <h3>More resources</h3>
+        <ul class="step-list">
+            <li>Live demo: the admin panel and Android demo app linked on the item page.</li>
+            <li>Video tutorials: environment setup for <a href="#environment-setup">Windows, macOS and Linux</a> (section 2) and <a href="#firebase-setup">Firebase with Flutter</a> (section 4).</li>
+            <li>Flutter: <a href="https://docs.flutter.dev" target="_blank">docs.flutter.dev</a> &middot; NestJS: <a href="https://docs.nestjs.com" target="_blank">docs.nestjs.com</a> &middot; Next.js: <a href="https://nextjs.org/docs" target="_blank">nextjs.org/docs</a></li>
+        </ul>
     </section>
 
     <!-- ===================================================== -->
@@ -1262,14 +1478,36 @@ pg_restore -d harmonia --clean harmonia-2026-01-15.dump      # restore</code></p
                 <table class="doc-table">
                     <thead><tr><th>Project</th><th>Keep your copy of</th></tr></thead>
                     <tbody>
-                        <tr><td>Backend</td><td><code>.env</code></td></tr>
-                        <tr><td>Admin panel</td><td><code>.env.local</code> (or <code>.env</code>)</td></tr>
+                        <tr><td>Backend</td><td><code>.env</code>, <code>prod.config.js</code> if you changed the PM2 name or port, <code>docs/media-signing-worker.js</code> if you deployed a changed copy</td></tr>
+                        <tr><td>Admin panel</td><td><code>.env.local</code> (or <code>.env</code>), <code>prod.config.js</code> if you changed it</td></tr>
                         <tr><td>Flutter app</td><td><code>lib/firebase_options.dart</code>, <code>android/app/google-services.json</code>, <code>ios/Runner/GoogleService-Info.plist</code>, <code>android/key.properties</code> and your keystore, <code>lib/core/network/constants/api_endpoint.dart</code>, app icons, <code>strings.xml</code>, <code>Info.plist</code> changes, AdMob app IDs</td></tr>
                     </tbody>
                 </table>
             </li>
             <li>Compare the new <code>.env.example</code> with your <code>.env</code> and add any new variables.</li>
         </ul>
+
+        <h3>Carrying your own code changes forward</h3>
+        <p>If you edited source files in the backend or admin panel (not only settings), do not copy the new version straight over them. The safest way is Git:</p>
+<pre><code># one time, before your first customisation
+cd Backend            # or Admin-Panel
+git init &amp;&amp; git add -A &amp;&amp; git commit -m "Harmonia 1.0.0 original"
+# ...make your changes and commit them as usual...
+
+# when a new version arrives
+git checkout -b upgrade
+# copy the new package files over the folder (keep the files listed above)
+git add -A &amp;&amp; git commit -m "Harmonia 1.x.x original"
+git checkout main &amp;&amp; git merge upgrade      # Git combines both; fix any conflicts it lists</code></pre>
+        <p>Files buyers commonly customise, and what to check after merging:</p>
+        <table class="doc-table">
+            <thead><tr><th>Project</th><th>Commonly customised</th><th>After upgrading</th></tr></thead>
+            <tbody>
+                <tr><td>Backend</td><td><code>src/modules/subscriptions/premium.defaults.ts</code> (default plans, ad settings), <code>src/modules/*/</code> services you extended, <code>docs/media-signing-worker.js</code></td><td>Run <code>npm run build</code> and <code>npm test</code>; new migrations run on start. Never edit an existing file in <code>db/migrations/</code>; add a new migration instead (<code>npm run migration:generate</code>)</td></tr>
+                <tr><td>Admin panel</td><td><code>tailwind.config.ts</code> (brand colours), <code>app/layout.tsx</code> (page title), <code>components/sidebar.tsx</code> (logo and name), pages in <code>app/(admin)/</code></td><td>Run <code>npm run lint</code> and <code>npm run build</code></td></tr>
+            </tbody>
+        </table>
+        <p>Without Git, compare your old folder and the new one with a diff tool (VS Code: right-click two files &gt; <strong>Compare Selected</strong>) and re-apply your edits to the new files.</p>
 
         <h3>1. Backend</h3>
 <pre><code>cd Backend
