@@ -149,7 +149,7 @@
                 <tr><td>Google Play Billing</td><td>Optional</td><td>Premium subscriptions. <strong>The only payment method included.</strong> Google takes a commission on each sale, typically 15&ndash;30%</td><td>Google (deducted from sales)</td></tr>
                 <tr><td>Google Cloud Pub/Sub</td><td>Optional</td><td>Real-time notifications about renewals and refunds from Google Play</td><td>Google, beyond the free tier</td></tr>
                 <tr><td>Apple In-App Purchase, Stripe, PayPal, other gateways</td><td>Not included</td><td>No checkout integration ships for these. Premium cannot be bought on iOS in this version</td><td>&mdash;</td></tr>
-                <tr><td>Google AdMob</td><td>Optional</td><td>Banner and interstitial ads for free listeners</td><td>Free; you earn revenue</td></tr>
+                <tr><td>Google AdMob (your own account)</td><td>Optional</td><td>Banner and interstitial ads for free listeners. You must follow AdMob's policies (<a href="#admob">section 10</a>)</td><td>Free to join; you are responsible for policy compliance and any costs related to your account or traffic</td></tr>
                 <tr><td>Meta for Developers (your own Facebook App ID)</td><td>Optional</td><td>Facebook sign-in</td><td>Free</td></tr>
                 <tr><td>Cloudflare Workers</td><td>Optional</td><td>Expiring audio links (the included worker script)</td><td>Cloudflare, beyond the free tier</td></tr>
                 <tr><td>Music licensing</td><td>Required for real content</td><td>You must own or license every track you publish. No music is included in the package</td><td>Rights holders / licensing bodies</td></tr>
@@ -564,6 +564,7 @@ static const Color darkSurface = Color(0xFF0B1B3D);    // dark cards #0B1B3D</co
             <li>Use the origin only &mdash; no trailing slash and no <code>/api/v1</code>; the app adds that itself.</li>
             <li>Use <strong>https</strong> in production.</li>
             <li>For local testing on an emulator use <code>http://10.0.2.2:7001</code> (Android emulator) or your computer's LAN IP (real device).</li>
+            <li><strong>Plain <code>http://</code> only works in debug builds.</strong> Release builds are HTTPS-only: Android allows cleartext traffic only in <code>android/app/src/debug/AndroidManifest.xml</code>, and iOS allows only local-network addresses (<code>NSAllowsLocalNetworking</code>). Your production <code>apiHost</code> and media URLs (R2) must use <code>https://</code>.</li>
         </ul>
         <p>Privacy policy, terms, support e-mail, store links, minimum app version and maintenance mode are <strong>not</strong> in the app code. They come from the backend and are edited on the admin panel's <strong>App config</strong> page.</p>
     </section>
@@ -657,13 +658,17 @@ static const Color darkSurface = Color(0xFF0B1B3D);    // dark cards #0B1B3D</co
             <strong>iOS:</strong> if you serve ads on iOS, also add Google's <code>SKAdNetworkItems</code> list and, if you use personalised ads, an App Tracking Transparency prompt (<code>NSUserTrackingUsageDescription</code>). See Google's <a href="https://developers.google.com/admob/flutter/quick-start" target="_blank">AdMob Flutter quick start</a>.
         </div>
         <p>Premium listeners never see ads.</p>
+
+        <div class="alert-warning">
+            <strong>Your AdMob account, your responsibility.</strong> AdMob is free to join, but you are responsible for following the <a href="https://support.google.com/admob/answer/6128543" target="_blank">AdMob program policies</a> and Google Publisher Policies (for example no clicks on your own ads, no ads on content you have no rights to, correct ad placement, and privacy consent such as GDPR/UMP and App Tracking Transparency where required). You are also responsible for any costs connected to your account or traffic, such as a paid consent-management platform, mediation partners, invalid-traffic deductions or advertising you buy to grow the app. Policy violations can limit or close your AdMob account; we cannot help with account appeals.
+        </div>
     </section>
 
     <!-- ===================================================== -->
     <section id="premium">
         <h2>11. Premium Subscriptions (Google Play)</h2>
         <div class="alert-warning">
-            <strong>Platform note:</strong> Premium is sold through <strong>Google Play Billing on Android</strong>. Apple In-App Purchase verification is not included in this version, so Premium cannot be bought on iOS; iOS listeners use the free tier. Premium can also be granted manually from the admin panel on any platform.
+            <strong>Platform note:</strong> Premium is sold through <strong>Google Play Billing on Android</strong>. Apple In-App Purchase verification is not included in this version, so <strong>iOS purchases are switched off by default</strong> in three places: the app never starts an App Store purchase or restore, the backend sends no plans to iOS, and the admin panel only allows Android / Google Play plans. iOS listeners use the free tier; Premium can still be granted manually from the admin panel on any platform.
         </div>
 
         <h3>iOS and App Store review</h3>
@@ -673,13 +678,19 @@ static const Color darkSurface = Color(0xFF0B1B3D);    // dark cards #0B1B3D</co
             <tbody>
                 <tr><td><strong>A. Free on iOS (recommended, no coding)</strong></td><td>
                     <ul>
-                        <li>In the admin panel's <strong>Premium plans</strong> page, untick <code>ios</code> on every plan so only <code>android</code> is left. New plans have both ticked by default. The backend returns plans per platform (<code>GET /premium/config?platform=ios</code>), so iOS then gets none.</li>
+                        <li>Nothing to switch off: this is the default. Plans are Android / Google Play only, the backend returns no plans for <code>GET /premium/config?platform=ios</code>, and the iOS app shows "Premium subscriptions are not available on iOS in this version" instead of plans.</li>
                         <li>Do not mark the songs a reviewer will try as Premium, or make sure the review account (below) has Premium.</li>
                         <li>Hide the Premium tab and "Go Premium" buttons on iOS, for example with <code>if (Platform.isIOS)</code> around the Premium tab in <code>lib/feature/main/presentation/widgets/bottom_nav_widget.dart</code>.</li>
                         <li>Never mention prices, "subscribe on our website" or "buy on Android" in the iOS app. Apple rejects that under 3.1.1 and 3.1.3.</li>
                     </ul></td></tr>
                 <tr><td><strong>B. Give the reviewer Premium</strong></td><td>Create a review account, grant it Premium in the admin panel (<strong>App users</strong> &gt; open the user &gt; <strong>Grant days</strong>), and enter its email and password in App Store Connect &gt; App Review Information. Premium granted by you is not a purchase, so this is allowed when the iOS app has no purchase buttons (approach A).</td></tr>
-                <tr><td><strong>C. Add Apple In-App Purchase</strong></td><td>Developer work: create subscriptions in App Store Connect, add their IDs to the plans (the database already has <code>apple_product_id</code>), and add App Store receipt verification and App Store Server Notifications to the backend, next to the Google Play code in <code>Backend/src/modules/subscriptions/</code>. The app's purchase code already supports StoreKit through the <code>in_app_purchase</code> package.</td></tr>
+                <tr><td><strong>C. Add Apple In-App Purchase</strong></td><td>Developer work: create subscriptions in App Store Connect, add their IDs to the plans (the database already has <code>apple_product_id</code>), and add App Store receipt / transaction verification and App Store Server Notifications to the backend, next to the Google Play code in <code>Backend/src/modules/subscriptions/</code>. <strong>Only after verification works</strong>, turn on the three switches:
+                    <ul>
+                        <li>Backend: <code>APP_STORE_PURCHASES_ENABLED = true</code> in <code>Backend/src/modules/subscriptions/store-support.ts</code></li>
+                        <li>App: <code>appStorePurchasesEnabled = true</code> in <code>Flutter-App/lib/feature/premium/domain/entities/premium_entities.dart</code></li>
+                        <li>Admin panel: <code>APP_STORE_PURCHASES_ENABLED = true</code> in <code>Admin-Panel/app/(admin)/premium/page.tsx</code></li>
+                    </ul>
+                    Turning them on without verification lets Apple charge listeners who then never receive Premium. The app's purchase code already supports StoreKit through the <code>in_app_purchase</code> package.</td></tr>
             </tbody>
         </table>
         <p>Suggested <strong>App Review notes</strong> for approach A and B:</p>
@@ -748,7 +759,7 @@ flutter build appbundle --release    # App Bundle for Google Play</code></pre>
         <ul class="step-list">
             <li>Run <code>cd ios &amp;&amp; pod install &amp;&amp; cd ..</code></li>
             <li>Open <code>ios/Runner.xcworkspace</code>, select your Team and bundle ID (section 3) and the capabilities from section 5.</li>
-            <li>The Podfile targets iOS 15.0; set <strong>Minimum Deployments</strong> of the Runner target to 15.0 as well.</li>
+            <li>The minimum iOS version is <strong>15.0</strong>, set in both the Xcode project and the Podfile. Nothing to change.</li>
             <li>Build the archive: <code>flutter build ipa --release</code>, then upload <code>build/ios/ipa/*.ipa</code> with Xcode's Organizer or the Transporter app.</li>
             <li>See Apple's <a href="https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases" target="_blank">distribution guide</a> and Flutter's <a href="https://docs.flutter.dev/deployment/ios" target="_blank">iOS deployment guide</a>.</li>
         </ul>
@@ -1353,7 +1364,7 @@ x-device-id: &lt;stable id per app install&gt;</code></pre>
                 <tr><td>Play source</td><td>album, playlist, artist, shorts, search, library, autoplay, other</td></tr>
                 <tr><td>Subscription status</td><td>pending, active, canceled, in_grace_period, on_hold, paused, expired, revoked, unknown (Premium = active, canceled or in_grace_period with a future expiry)</td></tr>
                 <tr><td>Subscription platform</td><td>android, ios, manual</td></tr>
-                <tr><td>Payment provider</td><td>google_play, app_store</td></tr>
+                <tr><td>Payment provider</td><td>google_play, app_store (<code>app_store</code> is rejected while App Store purchases are switched off, see section 11)</td></tr>
                 <tr><td>Audio variant status</td><td>none, pending, processing, ready, failed</td></tr>
             </tbody>
         </table>
