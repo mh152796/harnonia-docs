@@ -525,7 +525,7 @@ FCM_BROADCAST_TOPIC=mymusic</code></pre>
                 <tr><td>iOS home-screen name</td><td><code>ios/Runner/Info.plist</code></td><td><code>CFBundleDisplayName</code>, <code>CFBundleName</code></td></tr>
                 <tr><td>Name inside the app</td><td><code>lib/l10n/app_en.arb</code>, <code>lib/l10n/app_bn.arb</code></td><td><code>appName</code> (then run <code>flutter gen-l10n</code>)</td></tr>
                 <tr><td>Splash wordmark and tagline</td><td><code>lib/feature/splash/presentation/splash_screen.dart</code>, ARB key <code>splashTagline</code></td><td><code>'HARMONIA'</code></td></tr>
-                <tr><td>Other on-screen brand text</td><td><code>lib/feature/auth/presentation/.../login_page.dart</code>, <code>home_app_bar.dart</code>, <code>lyric_card_page.dart</code>, <code>local_notification_service.dart</code></td><td>search for <code>Harmonia</code></td></tr>
+                <tr><td>Other on-screen brand text</td><td><code>lib/feature/auth/presentation/pages/login_page.dart</code>, <code>home_app_bar.dart</code>, <code>lyric_card_page.dart</code>, <code>local_notification_service.dart</code></td><td>search for <code>Harmonia</code></td></tr>
             </tbody>
         </table>
         <p>Tip: search the <code>lib/</code> folder for <code>Harmonia</code> to find every occurrence.</p>
@@ -1384,7 +1384,12 @@ x-device-id: &lt;stable id per app install&gt;</code></pre>
 <pre><code>npm run migration:show       # list applied and pending migrations
 npm run migration:run        # apply pending migrations manually
 npm run migration:revert     # undo the last migration</code></pre>
-        <p>A fresh production database is created entirely by the migrations on first start.</p>
+        <p>A fresh production database is created entirely by the migrations on first start: <code>1793149601049-InitialSchema</code> creates every table, index and foreign key of version 1.0.0. This has been tested on an empty PostgreSQL database with <code>NODE_ENV=production</code>.</p>
+        <div class="alert-warning">
+            <strong>Use an empty database for production.</strong> Development mode (<code>NODE_ENV=development</code>) creates tables directly from the code. If you point a production server at a database that development already filled, the first migration stops with <em>relation "users" already exists</em>. Either create a new empty database for production (recommended), or, if the development schema is already up to date and you want to keep its data, mark the first migration as applied once:
+<pre><code>CREATE TABLE IF NOT EXISTS migrations (id serial PRIMARY KEY, "timestamp" bigint NOT NULL, name varchar NOT NULL);
+INSERT INTO migrations ("timestamp", name) VALUES (1793149601049, 'InitialSchema1793149601049');</code></pre>
+        </div>
 
         <h3>Backups</h3>
 <pre><code>pg_dump -Fc -d harmonia -f harmonia-$(date +%F).dump      # back up
@@ -1484,6 +1489,7 @@ pg_restore -d harmonia --clean harmonia-2026-01-15.dump      # restore</code></p
         <ul>
             <li>Initial release: Flutter app (Android and iOS), NestJS backend and Next.js admin panel.</li>
         </ul>
+        <p><strong>AI disclosure:</strong> AI tools were used to assist with parts of this item (source code, documentation and preview graphics). All AI-assisted work was reviewed, edited and tested by the author.</p>
     </section>
 
     <!-- ===================================================== -->
